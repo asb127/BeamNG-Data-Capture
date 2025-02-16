@@ -3,8 +3,6 @@ from beamngpy import BeamNGpy, Scenario, Vehicle
 
 import simulation_mgr
 
-import data_capture
-
 def randomize_vehicle_color(vehicle):
     vehicle.set_color((random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1)))
 
@@ -28,8 +26,8 @@ def create_scenario(bng, map_name, scenario_name, ego_vehicle_name, model, pos, 
 
 def initialize_scenario(bng, scenario, ego_vehicle):
     # Load and start the scenario in the simulator
-    bng.scenario.load(scenario)
-    bng.scenario.start()
+    simulation_mgr.load_scenario(bng, scenario)
+    simulation_mgr.start_scenario(bng)
     # Set the vehicle AI mode to realistic traffic simulation
     set_vehicle_ai_mode(ego_vehicle, 'traffic', True)
     # Enable traffic in the scenario with a maximum of 10 vehicles

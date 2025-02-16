@@ -5,7 +5,10 @@ from beamngpy.sensors import Camera
 def create_output_dir():
     # Create a directory to store the captured images
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    output_dir = os.path.join(os.path.expanduser('~'), 'Documents', 'BeamNG-Data-Capture', timestamp)
+    output_dir = os.path.join(os.path.expanduser('~'),
+                              'Documents',
+                              'BeamNG-Data-Capture',
+                              timestamp)
     os.makedirs(output_dir, exist_ok=True)
     return output_dir
 
@@ -14,6 +17,24 @@ def create_frame_output_dir(output_dir, i):
     frame_dir = os.path.join(output_dir, f'frame_{i}')
     os.makedirs(frame_dir, exist_ok=True)
     return frame_dir
+
+def create_camera_sensor(bng,
+                         vehicle,
+                         name,
+                         pos,
+                         resolution,
+                         is_render_colours,
+                         is_render_annotations,
+                         is_render_depth):
+    sensor_camera = Camera(name=name,
+                           bng=bng,
+                           vehicle=vehicle,
+                           pos=pos,
+                           resolution=resolution,
+                           is_render_colours=is_render_colours,
+                           is_render_annotations=is_render_annotations,
+                           is_render_depth=is_render_depth)
+    return sensor_camera
 
 def save_camera_data(camera, output_dir):
     # Poll the camera sensor
