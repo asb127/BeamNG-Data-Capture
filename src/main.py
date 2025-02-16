@@ -2,9 +2,12 @@ import data_capture_mgr, simulation_mgr, scenario_mgr
 
 # Create BeamNGpy instance and connect to the simulator
 bng = simulation_mgr.launch_beamng('localhost', 25252)
+logging_msg = 'BeamNGpy instance created and connected to the simulator.'
+logging_mgr.log_action(logging_msg)
 
 # Set simulation steps per second to 60
 simulation_mgr.set_simulation_steps_per_second(bng, 60)
+logging_mgr.log_action("Simulation steps per second set to 60.")
 
 # Create a scenario and vehicle for the capture session
 scenario, ego = scenario_mgr.create_scenario(bng,
@@ -32,6 +35,7 @@ sensor_camera = data_capture_mgr.create_camera_sensor(bng,
 
 # Create an output directory to store the captured data
 output_dir = data_capture_mgr.create_output_dir()
+logging_mgr.log_action(f"Output directory created at {output_dir}.")
 
 try:
     # Capture 10 images, one every 10 seconds
@@ -46,10 +50,12 @@ try:
         simulation_mgr.step_simulation_seconds(bng, wait_seconds)
         try:
             # Resume the simulation
-            simulation_mgr.resume_simulation(bng)
+            bng.resume()
         except ConnectionResetError:
             # Unable to reconnect with simulation
-            print('Connection to simulator reset. Stopping script.')
+            logging_msg = 'Connection to simulator reset. Stopping script.'
+            logging_mgr.log_error(logging_msg)
+            print(logging_msg)
             break
 
         frame_dir = data_capture_mgr.create_frame_output_dir(output_dir, i)
@@ -57,8 +63,10 @@ try:
         simulation_mgr.display_message(bng, f'Frame {i} captured')
 except KeyboardInterrupt:
     # User stopped the simulation process
+    logging_mgr.log_action('Simulation stopped by user.')
     print('Simulation stopped by user')
 finally:
     # Simulation finished, close
+    logging_mgr.log_action('Simulation finished.')
     print('Simulation finished')
     simulation_mgr.close_beamng(bng)
