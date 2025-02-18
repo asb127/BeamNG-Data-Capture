@@ -9,10 +9,10 @@ def randomize_vehicle_color(vehicle):
 def add_vehicle(scenario, vehicle_name, model, pos, rot_quat):
     # Create a vehicle with the provided name and model
     vehicle = Vehicle(vehicle_name, model=model)
-    logging_mgr.log_action(f'Vehicle "{vehicle_name} (model "{model}) created.')
+    logging_mgr.log_action(f'Vehicle created: "{vehicle_name}" (model "{model}").')
     # Add the vehicle to the scenario, with the specified position and rotation
     scenario.add_vehicle(vehicle, pos=pos, rot_quat=rot_quat)
-    logging_mgr.log_action(f'Vehicle "{vehicle_name} added to the scenario in position ({pos}) with rotation ({rot_quat}).')
+    logging_mgr.log_action(f'Vehicle {vehicle_name} added to the scenario in position {pos} with rotation {rot_quat}.')
     # Return the created vehicle
     return vehicle
 
@@ -22,10 +22,10 @@ def create_scenario(bng, map_name, scenario_name, ego_vehicle_name, model, pos, 
     logging_mgr.log_action(f'Scenario "{scenario_name}" created in map "{map_name}".')
     # Create an "ego vehicle" to capture data from
     ego = add_vehicle(scenario, ego_vehicle_name, model, pos, rot_quat)
-    logging_mgr.log_action(f'Ego vehicle {ego_vehicle_name} added to scenario.')
+    logging_mgr.log_action(f'Ego vehicle "{ego_vehicle_name}" added to scenario.')
     # Place files defining the scenario for the simulator to read
     scenario.make(bng)
-    logging_mgr.log_action(f'Scenario {scenario_name} files created.')
+    logging_mgr.log_action(f'Scenario "{scenario_name}" files created.')
     # Return the created scenario and the "ego" vehicle
     return scenario, ego
 

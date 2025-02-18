@@ -1,4 +1,5 @@
 import os, logging
+import beamngpy.logging as bng_logging
 
 log_file = ''
 
@@ -8,15 +9,12 @@ def configure_logging(output_dir):
     # Create a file to store the log messages
     log_file = os.path.join(output_dir, 'log.txt')
     # Configure the logging module
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
-                        handlers=[logging.FileHandler(log_file)])
-    print(f'Logging messages to {log_file}')
-    log_action(f'Logging messages to {log_file}')
+    bng_logging.set_up_simple_logging(log_file)
 
 def log_error(message):
     """Write an error message in the log file."""
-    logging.error(message)
+    bng_logging.module_logger.error(message)
 
 def log_action(message):
     """Write an action message in the log file."""
-    logging.info(message)
+    bng_logging.module_logger.info(message)

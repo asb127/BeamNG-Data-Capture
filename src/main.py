@@ -8,8 +8,6 @@ logging_mgr.configure_logging(output_dir)
 
 # Create BeamNGpy instance and connect to the simulator
 bng = simulation_mgr.launch_beamng('localhost', 25252)
-logging_msg = 'BeamNGpy instance created and connected to the simulator.'
-logging_mgr.log_action(logging_msg)
 
 # Set simulation steps per second to 60
 simulation_mgr.set_simulation_steps_per_second(bng, 60)
@@ -39,9 +37,9 @@ sensor_camera = data_capture_mgr.create_camera_sensor(bng,
                                                       True)
 
 try:
-    # Capture 10 images, one every 10 seconds
-    num_frames = 10
-    wait_seconds = 10
+    # Capture 5 images, one every 5 seconds
+    num_frames = 5
+    wait_seconds = 5
 
     # Iterate to capture one frame
     for i in range(num_frames):
@@ -60,7 +58,7 @@ try:
 
         frame_dir = data_capture_mgr.create_frame_output_dir(output_dir, i)
         data_capture_mgr.save_camera_data(sensor_camera, frame_dir)
-        simulation_mgr.display_message(bng, f'Frame {i} captured')
+        simulation_mgr.display_message(bng, f'Frame {i} captured.')
 except KeyboardInterrupt:
     # User stopped the simulation process
     logging_mgr.log_action('Simulation stopped by user.')
