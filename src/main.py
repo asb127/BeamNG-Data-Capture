@@ -26,7 +26,7 @@ scenario_mgr.initialize_scenario(bng,
                                  scenario,
                                  ego)
 
-# Create camera sensors and attach them to the vehicle
+# Create camera sensor and attach it to the vehicle
 sensor_camera = data_capture_mgr.create_camera_sensor(bng,
                                                       ego,
                                                       'sensor_camera',
@@ -57,7 +57,12 @@ try:
             break
 
         frame_dir = data_capture_mgr.create_frame_output_dir(output_dir, i)
-        data_capture_mgr.save_camera_data(sensor_camera, frame_dir)
+
+        # Save camera sensor data to the frame directory
+        data_capture_mgr.save_camera_image_data(sensor_camera, frame_dir)
+
+        # Save the metadata to the frame directory
+        # TODO
         simulation_mgr.display_message(bng, f'Frame {i} captured.')
 except KeyboardInterrupt:
     # User stopped the simulation process

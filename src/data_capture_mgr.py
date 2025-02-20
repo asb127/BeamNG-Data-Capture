@@ -1,6 +1,6 @@
-import os
+import os, json
 from datetime import datetime
-from beamngpy.sensors import Camera
+from beamngpy.sensors import Camera, AdvancedIMU
 
 import logging_mgr
 
@@ -30,6 +30,7 @@ def create_camera_sensor(bng,
                          is_render_colours,
                          is_render_annotations,
                          is_render_depth):
+    # Create a camera sensor attached to the vehicle
     sensor_camera = Camera(name=name,
                            bng=bng,
                            vehicle=vehicle,
@@ -40,7 +41,15 @@ def create_camera_sensor(bng,
                            is_render_depth=is_render_depth)
     return sensor_camera
 
-def save_camera_data(camera, output_dir):
+def create_imu_sensor(bng, vehicle, name):
+    # Create an Inertial Measurement Unit (IMU) sensor attached to the vehicle
+    sensor_imu = AdvancedIMU(name=name,
+                             bng=bng,
+                             vehicle=vehicle,
+                             is_send_immediately=True)
+    return sensor_imu
+
+def save_camera_image_data(camera, output_dir):
     # Poll the camera sensor
     sensor_data = camera.poll()
     logging_mgr.log_action(f'Camera "{camera.name}" data polled.')
@@ -58,3 +67,53 @@ def save_camera_data(camera, output_dir):
     depth_image.save(os.path.join(output_dir, 'depth.png'))
     semantic_image.save(os.path.join(output_dir, 'semantic.png'))
     logging_mgr.log_action(f'Camera "{camera.name}" data saved in "{output_dir}".')
+
+def extract_imu_data(imu):
+    # Extract data from the IMU sensor into a dictionary
+    imu_data = imu.poll()
+
+    # Extract specific data from the IMU sensor
+    imu_data_concise = {
+        'acceleration': imu_data.accSmooth,
+        'angular_acceleration': imu_data.angAccel,
+        'angular_velocity': imu_data.angVelSmooth
+    }
+
+    return imu_data_concise
+
+def extract_vehicle_metadata(vehicle):
+    vehicle.sensors.poll()
+
+    state_data = vehicle.sensors['state']
+
+    # Extract metadata from the vehicle into a dictionary
+    metadata = {
+        'time': state_data['time'],
+        'linear_velocity': state_data['vel'],
+        'direction': state_data['dir'],
+        'position': state_data['pos']
+    }
+    return metadata
+
+def extract_camera_metadata(camera):
+    # Extract metadata from the camera sensor into a dictionary
+    metadata = {
+        'fov': camera.fovY,
+        'resolution': camera.resolution,
+        'position': camera.pos
+    }
+    return metadata
+
+def combine_metadata(vehicle_metadata, camera_metadata):
+    # Combine all metadata into a single dictionary
+    # TODO
+    metadata = {**vehicle_metadata, **camera_metadata}
+    
+    return metadata
+
+def save_metadata(metadata, output_dir):
+    # Save metadata to a JSON file
+    metadata_file = os.path.join(output_dir, 'metadata.json')
+    with open(metadata_file, 'w') as f:
+        json.dump(metadata, f, indent=4)
+    logging_mgr.log_action(f'Metadata saved in "{metadata_file}".')
