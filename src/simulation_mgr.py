@@ -32,7 +32,7 @@ def step_simulation_steps(bng: BeamNGpy, steps: int) -> None:
 
 def step_simulation_seconds(bng: BeamNGpy, seconds: int) -> None:
     # Advance the simulation the corresponding number of steps for the given number of seconds
-    steps = seconds * simulation_steps_per_second
+    steps = int(seconds * simulation_steps_per_second)
     bng.step(steps)
     logging_mgr.log_action(f'Simulation advanced by {seconds} seconds.')
 

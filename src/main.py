@@ -1,7 +1,8 @@
-import data_capture_mgr, simulation_mgr, scenario_mgr, logging_mgr
+import data_capture_mgr, simulation_mgr, scenario_mgr, logging_mgr, utils
 
 # Create an output directory to store the session data
-output_dir = data_capture_mgr.create_output_dir()
+root_dir = utils.return_documents_path()
+output_dir = utils.create_output_dir(root_dir)
 
 # Set up logging for the data capture process
 logging_mgr.configure_logging(output_dir)
@@ -42,16 +43,38 @@ sensor_imu = data_capture_mgr.create_imu_sensor(bng,
                                                 'sensor_imu')
 
 try:
-    # Capture 5 images, one every 5 seconds
-    num_frames = 5
-    wait_seconds = 5
+    # Capture images for 10 seconds, one every 2 seconds
+    session_length_s = 10
+    capture_freq_hz = 0.5
+
+    capture_period_s = 1 / capture_freq_hz
+    num_frames = int(session_length_s * capture_freq_hz)
+
+    logging_mgr.log_action(f'Starting capture session for {session_length_s} seconds with {capture_freq_hz} Hz capture frequency.')
+    logging_mgr.log_action(f'Capturing {num_frames} total frames.')
+
+    # Produce error if session length isn't larger than 0
+    if session_length_s <= 0:
+        raise ValueError('Session length must be a positive number.')
+    
+    # Produce error if capture frequency isn't larger than 0
+    if capture_freq_hz <= 0:
+        raise ValueError('Capture frequency must be a positive number.')
+    
+    # Produce error if capture frequency is larger than simulation steps per second
+    if capture_freq_hz > simulation_mgr.simulation_steps_per_second:
+        raise ValueError('Capture frequency cannot be larger than simulation steps per second.')
+    
+    # Produce error if the number of frames is not bigger than 0
+    if num_frames <= 0:
+        raise ValueError('Number of frames must be a positive number.')
 
     # Iterate to capture one frame
     for i in range(num_frames):
         # Pause the simulation
         simulation_mgr.pause_simulation(bng)
         # Advance the simulation by the corresponding number of seconds
-        simulation_mgr.step_simulation_seconds(bng, wait_seconds)
+        simulation_mgr.step_simulation_seconds(bng, capture_period_s)
         try:
             # Resume the simulation
             bng.resume()
@@ -61,7 +84,7 @@ try:
             logging_mgr.log_error(logging_msg)
             break
 
-        frame_dir = data_capture_mgr.create_frame_output_dir(output_dir, i)
+        frame_dir = utils.create_frame_output_dir(output_dir, i)
 
         # Save camera sensor data to the frame directory
         data_capture_mgr.save_camera_image_data(sensor_camera, frame_dir)
