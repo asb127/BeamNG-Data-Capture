@@ -1,10 +1,12 @@
 import os, json
 from datetime import datetime
 from beamngpy.sensors import Camera, AdvancedIMU
+from beamngpy import BeamNGpy
+from beamngpy.vehicle import Vehicle
 
 import logging_mgr
 
-def create_output_dir():
+def create_output_dir() -> str:
     # Create a directory to store the captured images
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     output_dir = os.path.join(os.path.expanduser('~'),
@@ -15,22 +17,22 @@ def create_output_dir():
     logging_mgr.log_action(f'Output directory created at {output_dir}.')
     return output_dir
 
-def create_frame_output_dir(output_dir, i):
+def create_frame_output_dir(output_dir: str, i: int) -> str:
     # Create a subfolder for every frame
     frame_dir = os.path.join(output_dir, f'frame_{i}')
     os.makedirs(frame_dir, exist_ok=True)
     logging_mgr.log_action(f'Frame {i} output directory created at {output_dir}.')
     return frame_dir
 
-def create_camera_sensor(bng,
-                         vehicle,
-                         name,
-                         pos,
-                         resolution,
-                         is_render_colours,
-                         is_render_annotations,
-                         is_render_depth,
-                         fovY=70):
+def create_camera_sensor(bng: BeamNGpy,
+                         vehicle: Vehicle,
+                         name: str,
+                         pos: tuple,
+                         resolution: tuple,
+                         is_render_colours: bool,
+                         is_render_annotations: bool,
+                         is_render_depth: bool,
+                         fovY: int = 70) -> dict:
     # Create a camera sensor attached to the vehicle
     sensor_camera = Camera(name=name,
                            bng=bng,
@@ -44,7 +46,9 @@ def create_camera_sensor(bng,
     # Return the camera sensor and its field of view
     return {'camera': sensor_camera, 'fovY': fovY}
 
-def create_imu_sensor(bng, vehicle, name):
+def create_imu_sensor(bng: BeamNGpy,
+                      vehicle: Vehicle,
+                      name: str) -> AdvancedIMU:
     # Create an Inertial Measurement Unit (IMU) sensor attached to the vehicle
     sensor_imu = AdvancedIMU(name=name,
                              bng=bng,
@@ -52,7 +56,7 @@ def create_imu_sensor(bng, vehicle, name):
                              is_send_immediately=True)
     return sensor_imu
 
-def save_camera_image_data(camera_dict, output_dir):
+def save_camera_image_data(camera_dict: dict, output_dir: str) -> None:
     # Extract the camera sensor from the received dictionary
     camera = camera_dict['camera']
     # Poll the camera sensor
@@ -73,7 +77,7 @@ def save_camera_image_data(camera_dict, output_dir):
     semantic_image.save(os.path.join(output_dir, 'semantic.png'))
     logging_mgr.log_action(f'Camera "{camera.name}" data saved in "{output_dir}".')
 
-def extract_imu_data(imu):
+def extract_imu_data(imu: AdvancedIMU) -> dict:
     # Extract data from the IMU sensor into a dictionary
     imu_data = imu.poll()
     logging_mgr.log_action(f'IMU "{imu.name}" data polled.')
@@ -89,14 +93,14 @@ def extract_imu_data(imu):
 
     return imu_data_concise
 
-def extract_vehicle_metadata(vehicle):
+def extract_vehicle_metadata(vehicle: Vehicle) -> dict:
     # Poll the vehicle sensors
     vehicle.sensors.poll()
-    logging_mgr.log_action(f'Vehicle "{vehicle.name}" sensors polled.')
+    logging_mgr.log_action(f'Vehicle "{vehicle.vid}" sensors polled.')
 
     # Extract state data from the vehicle
     state_data = vehicle.sensors['state']
-    logging_mgr.log_action(f'Vehicle "{vehicle.name}" state data extracted.')
+    logging_mgr.log_action(f'Vehicle "{vehicle.vid}" state data extracted.')
 
     # Extract metadata from the vehicle into a dictionary
     metadata = {
@@ -105,11 +109,11 @@ def extract_vehicle_metadata(vehicle):
         'direction': state_data['dir'],
         'position': state_data['pos']
     }
-    logging_mgr.log_action(f'Vehicle "{vehicle.name}" metadata extracted.')
+    logging_mgr.log_action(f'Vehicle "{vehicle.vid}" metadata extracted.')
 
     return metadata
 
-def extract_camera_metadata(camera_dict):
+def extract_camera_metadata(camera_dict: dict) -> dict:
     # Split the camera dictionary into the camera sensor and its field of view
     camera = camera_dict['camera']
     fovY = camera_dict['fovY']
@@ -124,7 +128,7 @@ def extract_camera_metadata(camera_dict):
 
     return metadata
 
-def combine_metadata(metadata_array):
+def combine_metadata(metadata_array: list) -> dict:
     # Combine all metadata into a single dictionary
     combined_metadata = {}
     for metadata in metadata_array:
@@ -132,9 +136,11 @@ def combine_metadata(metadata_array):
     logging_mgr.log_action('Metadata array combined.')
     return combined_metadata
 
-def save_metadata(metadata, output_dir):
+def save_metadata(metadata: dict, output_dir: str) -> None:
     # Save metadata to a JSON file
     metadata_file = os.path.join(output_dir, 'metadata.json')
     with open(metadata_file, 'w') as f:
-        json.dump(metadata, f, indent=4)
+        json.dump(metadata,
+                  f,
+                  indent=4)
     logging_mgr.log_action(f'Metadata saved in "{metadata_file}".')

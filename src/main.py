@@ -37,7 +37,9 @@ sensor_camera = data_capture_mgr.create_camera_sensor(bng,
                                                       True)
 
 # Create an IMU sensor and attach it to the vehicle
-sensor_imu = data_capture_mgr.create_imu_sensor(bng, ego, 'sensor_imu')
+sensor_imu = data_capture_mgr.create_imu_sensor(bng,
+                                                ego,
+                                                'sensor_imu')
 
 try:
     # Capture 5 images, one every 5 seconds
@@ -69,7 +71,9 @@ try:
         vehicle_metadata = data_capture_mgr.extract_vehicle_metadata(ego)
         imu_metadata = data_capture_mgr.extract_imu_data(sensor_imu)
 
-        metadata_array = [camera_metadata, imu_metadata, vehicle_metadata]
+        metadata_array = [camera_metadata,
+                          imu_metadata,
+                          vehicle_metadata]
         frame_metadata = data_capture_mgr.combine_metadata(metadata_array)
 
         data_capture_mgr.save_metadata(frame_metadata, frame_dir)
