@@ -29,17 +29,20 @@ def create_camera_sensor(bng,
                          resolution,
                          is_render_colours,
                          is_render_annotations,
-                         is_render_depth):
+                         is_render_depth,
+                         fovY=70):
     # Create a camera sensor attached to the vehicle
     sensor_camera = Camera(name=name,
                            bng=bng,
                            vehicle=vehicle,
                            pos=pos,
                            resolution=resolution,
+                           field_of_view_y=fovY,
                            is_render_colours=is_render_colours,
                            is_render_annotations=is_render_annotations,
                            is_render_depth=is_render_depth)
-    return sensor_camera
+    # Return the camera sensor and its field of view
+    return {'camera': sensor_camera, 'fovY': fovY}
 
 def create_imu_sensor(bng, vehicle, name):
     # Create an Inertial Measurement Unit (IMU) sensor attached to the vehicle
@@ -49,7 +52,9 @@ def create_imu_sensor(bng, vehicle, name):
                              is_send_immediately=True)
     return sensor_imu
 
-def save_camera_image_data(camera, output_dir):
+def save_camera_image_data(camera_dict, output_dir):
+    # Extract the camera sensor from the received dictionary
+    camera = camera_dict['camera']
     # Poll the camera sensor
     sensor_data = camera.poll()
     logging_mgr.log_action(f'Camera "{camera.name}" data polled.')
@@ -71,20 +76,27 @@ def save_camera_image_data(camera, output_dir):
 def extract_imu_data(imu):
     # Extract data from the IMU sensor into a dictionary
     imu_data = imu.poll()
+    logging_mgr.log_action(f'IMU "{imu.name}" data polled.')
 
     # Extract specific data from the IMU sensor
     imu_data_concise = {
-        'acceleration': imu_data.accSmooth,
-        'angular_acceleration': imu_data.angAccel,
-        'angular_velocity': imu_data.angVelSmooth
+        'acceleration': imu_data['accSmooth'],
+        'angular_acceleration': imu_data['angAccel'],
+        'angular_velocity': imu_data['angVelSmooth']
     }
+
+    logging_mgr.log_action(f'IMU "{imu.name}" metadata extracted.')
 
     return imu_data_concise
 
 def extract_vehicle_metadata(vehicle):
+    # Poll the vehicle sensors
     vehicle.sensors.poll()
+    logging_mgr.log_action(f'Vehicle "{vehicle.name}" sensors polled.')
 
+    # Extract state data from the vehicle
     state_data = vehicle.sensors['state']
+    logging_mgr.log_action(f'Vehicle "{vehicle.name}" state data extracted.')
 
     # Extract metadata from the vehicle into a dictionary
     metadata = {
@@ -93,23 +105,32 @@ def extract_vehicle_metadata(vehicle):
         'direction': state_data['dir'],
         'position': state_data['pos']
     }
+    logging_mgr.log_action(f'Vehicle "{vehicle.name}" metadata extracted.')
+
     return metadata
 
-def extract_camera_metadata(camera):
+def extract_camera_metadata(camera_dict):
+    # Split the camera dictionary into the camera sensor and its field of view
+    camera = camera_dict['camera']
+    fovY = camera_dict['fovY']
+
     # Extract metadata from the camera sensor into a dictionary
     metadata = {
-        'fov': camera.fovY,
+        'fov': fovY,
         'resolution': camera.resolution,
-        'position': camera.pos
+        'near_far_planes': camera.near_far_planes
     }
+    logging_mgr.log_action(f'Camera "{camera.name}" metadata extracted.')
+
     return metadata
 
-def combine_metadata(vehicle_metadata, camera_metadata):
+def combine_metadata(metadata_array):
     # Combine all metadata into a single dictionary
-    # TODO
-    metadata = {**vehicle_metadata, **camera_metadata}
-    
-    return metadata
+    combined_metadata = {}
+    for metadata in metadata_array:
+        combined_metadata.update(metadata)
+    logging_mgr.log_action('Metadata array combined.')
+    return combined_metadata
 
 def save_metadata(metadata, output_dir):
     # Save metadata to a JSON file
