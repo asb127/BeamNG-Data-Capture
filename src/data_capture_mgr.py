@@ -1,10 +1,11 @@
-import os, json
-from datetime import datetime
+import os
 from beamngpy.sensors import Camera, AdvancedIMU
 from beamngpy import BeamNGpy
 from beamngpy.vehicle import Vehicle
+from typing import Dict, Union
+from PIL import Image
 
-import logging_mgr
+import logging_mgr, utils
 
 def create_camera_sensor(bng: BeamNGpy,
                          vehicle: Vehicle,
@@ -14,7 +15,7 @@ def create_camera_sensor(bng: BeamNGpy,
                          is_render_colours: bool,
                          is_render_annotations: bool,
                          is_render_depth: bool,
-                         fovY: int = 70) -> dict:
+                         fovY: float = 70) -> Dict[str, Union[Image.Image, float]]:
     # Create a camera sensor attached to the vehicle
     sensor_camera = Camera(name=name,
                            bng=bng,
@@ -38,7 +39,7 @@ def create_imu_sensor(bng: BeamNGpy,
                              is_send_immediately=True)
     return sensor_imu
 
-def save_camera_image_data(camera_dict: dict, output_dir: str) -> None:
+def save_camera_image_data(camera_dict: Dict[str, Union[Image.Image, float]], output_dir: str) -> None:
     # Extract the camera sensor from the received dictionary
     camera = camera_dict['camera']
     # Poll the camera sensor
@@ -50,7 +51,9 @@ def save_camera_image_data(camera_dict: dict, output_dir: str) -> None:
     depth_image = sensor_data['depth']
     semantic_image = sensor_data['annotation']
 
-    # Remove alpha channel from color image
+    # Remove alpha channel from the images
+    color_image = color_image.convert('RGB')
+    color_image = color_image.convert('RGB')
     color_image = color_image.convert('RGB')
 
     # Save the images to the output directory
@@ -110,19 +113,9 @@ def extract_camera_metadata(camera_dict: dict) -> dict:
 
     return metadata
 
-def combine_metadata(metadata_array: list) -> dict:
-    # Combine all metadata into a single dictionary
-    combined_metadata = {}
-    for metadata in metadata_array:
-        combined_metadata.update(metadata)
-    logging_mgr.log_action('Metadata array combined.')
-    return combined_metadata
-
 def save_metadata(metadata: dict, output_dir: str) -> None:
     # Save metadata to a JSON file
-    metadata_file = os.path.join(output_dir, 'metadata.json')
-    with open(metadata_file, 'w') as f:
-        json.dump(metadata,
-                  f,
-                  indent=4)
-    logging_mgr.log_action(f'Metadata saved in "{metadata_file}".')
+    metadata_file_name = 'metadata.json'
+    metadata_file_path = os.path.join(output_dir, metadata_file_name)
+    utils.save_json_file(metadata, output_dir, metadata_file_name)
+    logging_mgr.log_action(f'Metadata saved in "{metadata_file_path}".')

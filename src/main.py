@@ -97,7 +97,7 @@ try:
         metadata_array = [camera_metadata,
                           imu_metadata,
                           vehicle_metadata]
-        frame_metadata = data_capture_mgr.combine_metadata(metadata_array)
+        frame_metadata = utils.combine_dict(metadata_array)
 
         data_capture_mgr.save_metadata(frame_metadata, frame_dir)
         simulation_mgr.display_message(bng, f'Frame {i} captured.')
