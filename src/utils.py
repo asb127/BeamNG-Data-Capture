@@ -7,22 +7,21 @@ def return_documents_path() -> str:
     # Return the path to the user's "Documents" folder
     return os.path.expanduser('~/Documents')
 
+def create_dir(path: str, name: str) -> str:
+    # Create a directory with the given name at the specified path
+    dir_path = os.path.join(path, name)
+    os.makedirs(dir_path, exist_ok=True)
+    logging_mgr.log_action(f'Directory created at "{dir_path}".')
+    return dir_path
+
 def create_output_dir(root_dir: str) -> str:
     # Create a directory to store the captured images
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    output_dir = os.path.join(root_dir,
-                              'BeamNG-Data-Capture',
-                              timestamp)
-    os.makedirs(output_dir, exist_ok=True)
-    logging_mgr.log_action(f'Output directory created at "{output_dir}".')
-    return output_dir
+    return create_dir(root_dir, os.path.join('BeamNG-Data-Capture', timestamp))
 
 def create_frame_output_dir(output_dir: str, i: int) -> str:
     # Create a subfolder for every frame
-    frame_dir = os.path.join(output_dir, f'frame_{i}')
-    os.makedirs(frame_dir, exist_ok=True)
-    logging_mgr.log_action(f'Frame {i} output directory created at "{output_dir}".')
-    return frame_dir
+    return create_dir(output_dir, f'frame_{i}')
 
 def combine_dict(metadata_array: list) -> dict:
     # Combine all metadata into a single dictionary
@@ -37,3 +36,10 @@ def save_json_file(data: dict, output_dir: str, filename: str) -> None:
     with open(os.path.join(output_dir, filename), 'w') as file:
         json.dump(data, file, indent=4)
     logging_mgr.log_action(f'JSON file "{filename}" saved in "{output_dir}".')
+
+def load_json_file(file_path: str) -> dict:
+    # Load a JSON file from the provided path into an output dictionary
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    logging_mgr.log_action(f'JSON file "{file_path}" loaded.')
+    return data
