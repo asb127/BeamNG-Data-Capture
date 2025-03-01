@@ -91,13 +91,9 @@ try:
     camera_metadata = utils.create_parent_dict(list(map(lambda x: x['camera'].name, camera_list)),
                                                camera_metadata_list)
     
-    # Extract general session metadata 
-    session_metadata = []
-    # session_metadata = session_config.extract_session_metadata(session)
-
-    # Combine all not frame-specific metadata into a single dictionary and save into session directory
-    combined_metadata = utils.combine_dict([session_metadata, camera_metadata])
-    data_capture_mgr.save_metadata(combined_metadata, output_dir, 'session_metadata.json')
+    # Extract and save general session metadata 
+    session_metadata = session.extract_session_metadata()
+    data_capture_mgr.save_metadata(session_metadata, output_dir, 'session_metadata.json')
 
     # Iterate to capture one frame
     for i in range(num_frames):

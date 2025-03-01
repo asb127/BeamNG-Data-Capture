@@ -99,7 +99,7 @@ class SessionConfig:
 
     def to_dict(self) -> SessionConfigDict:
         '''Convert this session configuration to a dictionary.'''
-        return {
+        generated_dict = {
             'name': self._name,
             'duration_s': self._duration_s,
             'capture_freq_hz': self._capture_freq_hz,
@@ -107,6 +107,7 @@ class SessionConfig:
             'vehicle': self._vehicle.to_dict(),
             'cameras': [camera.to_dict() for camera in self._cameras]
         }
+        return generated_dict
 
     def from_dict(self, config_dict: SessionConfigDict) -> None:
         '''Load a session configuration from a dictionary.'''
@@ -117,6 +118,19 @@ class SessionConfig:
         self._vehicle = VehicleConfig()
         self._vehicle.from_dict(config_dict['vehicle'])
         self._cameras = [CameraSensorConfig().from_dict(camera) for camera in config_dict['cameras']]
+
+    def extract_session_metadata(self) -> SessionConfigDict:
+        '''
+        Extract session metadata from the provided configuration.
+        
+        Only includes fields relevant as training data (excludes name, map, and vehicle).
+        '''
+        metadata = {
+            'duration_s': self.duration_s,
+            'capture_freq_hz': self.capture_freq_hz,
+            'cameras': [camera.extract_camera_metadata() for camera in self.cameras]
+        }
+        return metadata
 
 def create_session_config() -> SessionConfig:
     '''Create a default session configuration.'''

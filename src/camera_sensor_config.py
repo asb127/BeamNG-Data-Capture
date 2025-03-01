@@ -10,6 +10,7 @@ class CameraSensorConfigDict(TypedDict):
     is_render_annotations: bool
     is_render_depth: bool
     fov_y: int
+    near_far_planes: tuple
 
 class CameraSensorConfig:
     '''
@@ -22,7 +23,8 @@ class CameraSensorConfig:
                  is_render_colours: bool = True,
                  is_render_annotations: bool = True,
                  is_render_depth: bool = True,
-                 fov_y: int = 70):
+                 fov_y: int = 70,
+                 near_far_planes: tuple = (0.1, 1000.0)):
         '''
         Initialize a new camera sensor configuration with the provided parameters.
         '''
@@ -33,6 +35,7 @@ class CameraSensorConfig:
         self._is_render_annotations = is_render_annotations
         self._is_render_depth = is_render_depth
         self._fov_y = fov_y
+        self._near_far_planes = near_far_planes
 
     @property
     def name(self) -> str:
@@ -104,6 +107,16 @@ class CameraSensorConfig:
         '''Set the field of view (Y) of the camera sensor.'''
         self._fov_y = fov_y
 
+    @property
+    def near_far_planes(self) -> tuple:
+        '''Get the near and far planes of the camera sensor.'''
+        return self._near_far_planes
+
+    @near_far_planes.setter
+    def near_far_planes(self, near_far_planes: tuple) -> None:
+        '''Set the near and far planes of the camera sensor.'''
+        self._near_far_planes = near_far_planes
+
     def to_dict(self) -> CameraSensorConfigDict:
         '''Convert this camera sensor configuration to a dictionary.'''
         return {
@@ -113,7 +126,8 @@ class CameraSensorConfig:
             'is_render_colours': self._is_render_colours,
             'is_render_annotations': self._is_render_annotations,
             'is_render_depth': self._is_render_depth,
-            'fov_y': self._fov_y
+            'fov_y': self._fov_y,
+            'near_far_planes': self._near_far_planes
         }
 
     def from_dict(self, config_dict: CameraSensorConfigDict) -> None:
@@ -125,3 +139,20 @@ class CameraSensorConfig:
         self._is_render_annotations = config_dict['is_render_annotations']
         self._is_render_depth = config_dict['is_render_depth']
         self._fov_y = config_dict['fov_y']
+        self._near_far_planes = config_dict['near_far_planes']
+
+    def extract_camera_metadata(self) -> dict:
+        '''
+        Extract metadata from the camera sensor configuration.
+        
+        Only includes fields relevant as training data (excludes render flags).
+        Note: Name is included to differentiate cameras.
+        '''
+        camera_metadata = {
+            'name': self.name,
+            'position': self.position,
+            'resolution': self.resolution,
+            'fov_y': self.fov_y,
+            'near_far_planes': self.near_far_planes
+        }
+        return camera_metadata
