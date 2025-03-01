@@ -87,9 +87,17 @@ try:
     if num_frames <= 0:
         raise ValueError('Number of frames must be a positive number.')
     
-    # Save general session metadata (not frame-specific)
-    # TO DO
+    # Create a dictionary with all the cameras' metadata
+    camera_metadata = utils.create_parent_dict(list(map(lambda x: x['camera'].name, camera_list)),
+                                               camera_metadata_list)
+    
+    # Extract general session metadata 
+    session_metadata = []
+    # session_metadata = session_config.extract_session_metadata(session)
 
+    # Combine all not frame-specific metadata into a single dictionary and save into session directory
+    combined_metadata = utils.combine_dict([session_metadata, camera_metadata])
+    data_capture_mgr.save_metadata(combined_metadata, output_dir, 'session_metadata.json')
 
     # Iterate to capture one frame
     for i in range(num_frames):
@@ -112,8 +120,8 @@ try:
         for camera_sensor in camera_list:
             # Create a directory for the camera sensor inside the frame directory
             camera_dir = utils.create_dir(frame_dir, camera_sensor['camera'].name)
-            # Save the camera sensor data
-            data_capture_mgr.save_camera_image_data(camera_sensor, frame_dir)
+            # Save the camera sensor data into the camera directory
+            data_capture_mgr.save_camera_image_data(camera_sensor, camera_dir)
 
         # Extract, combine and save the metadata to the frame directory
         vehicle_metadata = data_capture_mgr.extract_vehicle_metadata(ego)

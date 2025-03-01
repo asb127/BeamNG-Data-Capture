@@ -1,11 +1,29 @@
 import os, json
 from datetime import datetime
+from typing import List
 
 import logging_mgr
+
+def accept_string_args(*args) -> List[str]:
+    # Only accept non-empty string arguments
+    accepted_args: List[str] = []
+    for arg in args:
+        if not isinstance(arg, str):
+            logging_mgr.log_warning(f'Argument is not a string: "{arg}".')
+        elif not arg:
+            logging_mgr.log_warning(f'Empty string argument detected.')
+        else:
+            accepted_args.append(arg)
+    return accepted_args
 
 def return_documents_path() -> str:
     # Return the path to the user's "Documents" folder
     return os.path.expanduser('~/Documents')
+
+def join_paths(*args) -> str:
+    # Join non-empty string arguments into a single path
+    accepted_args = accept_string_args(*args)
+    return os.path.join(*accepted_args)
 
 def create_dir(path: str, name: str) -> str:
     # Create a directory with the given name at the specified path
@@ -23,13 +41,23 @@ def create_frame_output_dir(output_dir: str, i: int) -> str:
     # Create a subfolder for every frame
     return create_dir(output_dir, f'frame_{i}')
 
-def combine_dict(metadata_array: list) -> dict:
+def combine_dict(metadata_array: List[dict]) -> dict:
     # Combine all metadata into a single dictionary
     combined_metadata = {}
     for metadata in metadata_array:
         combined_metadata.update(metadata)
     logging_mgr.log_action(f'Dictionary array combined with keys: {list(combined_metadata.keys())}.')
     return combined_metadata
+
+def create_parent_dict(keys: List[str], values: List[dict]) -> dict:
+    # Create a dictionary with the provided strings as keys and dictionaries as values
+    output_dict = dict()
+    if len(keys) != len(values):
+        logging_mgr.log_error('Could not create parent dictionary: keys and values lists must have the same length.')
+    else:
+        output_dict = dict(zip(keys, values))
+        logging_mgr.log_action(f'Dictionary created with keys: {list(output_dict.keys())}.')
+    return output_dict
 
 def save_json_file(data: dict, output_dir: str, filename: str) -> None:
     # Save the provided data as a JSON file in the output directory

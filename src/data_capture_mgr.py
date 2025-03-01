@@ -1,9 +1,8 @@
-import os, json
 from beamngpy.sensors import Camera, AdvancedIMU
 from beamngpy import BeamNGpy
 from beamngpy.vehicle import Vehicle
 
-import logging_mgr
+import logging_mgr, utils
 
 def create_camera_sensor(bng: BeamNGpy,
                          vehicle: Vehicle,
@@ -53,9 +52,9 @@ def save_camera_image_data(camera_dict: dict, output_dir: str) -> None:
     color_image = color_image.convert('RGB')
 
     # Save the images to the output directory
-    color_image.save(os.path.join(output_dir, 'color.png'))
-    depth_image.save(os.path.join(output_dir, 'depth.png'))
-    semantic_image.save(os.path.join(output_dir, 'semantic.png'))
+    color_image.save(utils.join_paths(output_dir, 'color.png'))
+    depth_image.save(utils.join_paths(output_dir, 'depth.png'))
+    semantic_image.save(utils.join_paths(output_dir, 'semantic.png'))
     logging_mgr.log_action(f'Camera "{camera.name}" data saved in "{output_dir}".')
 
 def extract_imu_data(imu: AdvancedIMU) -> dict:
@@ -117,11 +116,11 @@ def combine_metadata(metadata_array: list) -> dict:
     logging_mgr.log_action('Metadata array combined.')
     return combined_metadata
 
-def save_metadata(metadata: dict, output_dir: str) -> None:
+def save_metadata(metadata: dict,
+                  output_dir: str,
+                  file_name = 'metadata.json') -> None:
     # Save metadata to a JSON file
-    metadata_file = os.path.join(output_dir, 'metadata.json')
-    with open(metadata_file, 'w') as f:
-        json.dump(metadata,
-                  f,
-                  indent=4)
-    logging_mgr.log_action(f'Metadata saved in "{metadata_file}".')
+    utils.save_json_file(metadata,
+                         output_dir,
+                         file_name)
+    logging_mgr.log_action(f'Metadata saved in "{output_dir}".')
