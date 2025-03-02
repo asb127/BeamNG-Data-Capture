@@ -3,28 +3,23 @@ from beamngpy import BeamNGpy
 from beamngpy.vehicle import Vehicle
 
 import logging_mgr, utils
+from camera_sensor_config import CameraSensorConfig
 
 def create_camera_sensor(bng: BeamNGpy,
                          vehicle: Vehicle,
-                         name: str,
-                         pos: tuple,
-                         resolution: tuple,
-                         is_render_colours: bool,
-                         is_render_annotations: bool,
-                         is_render_depth: bool,
-                         fov_y: int = 70) -> dict:
+                         camera: CameraSensorConfig) -> Camera:
     # Create a camera sensor attached to the vehicle
-    sensor_camera = Camera(name=name,
+    sensor_camera = Camera(name=camera.name,
                            bng=bng,
                            vehicle=vehicle,
-                           pos=pos,
-                           resolution=resolution,
-                           field_of_view_y=fov_y,
-                           is_render_colours=is_render_colours,
-                           is_render_annotations=is_render_annotations,
-                           is_render_depth=is_render_depth)
+                           pos=camera.position,
+                           resolution=camera.resolution,
+                           field_of_view_y=camera.fov_y,
+                           is_render_colours=camera.is_render_colours,
+                           is_render_annotations=camera.is_render_annotations,
+                           is_render_depth=camera.is_render_depth)
     # Return the camera sensor and its field of view
-    return {'camera': sensor_camera, 'fov_y': fov_y}
+    return sensor_camera
 
 def create_imu_sensor(bng: BeamNGpy,
                       vehicle: Vehicle,
@@ -36,9 +31,7 @@ def create_imu_sensor(bng: BeamNGpy,
                              is_send_immediately=True)
     return sensor_imu
 
-def save_camera_image_data(camera_dict: dict, output_dir: str) -> None:
-    # Extract the camera sensor from the received dictionary
-    camera = camera_dict['camera']
+def save_camera_image_data(camera: Camera, output_dir: str) -> None:
     # Poll the camera sensor
     sensor_data = camera.poll()
     logging_mgr.log_action(f'Camera "{camera.name}" data polled.')
@@ -93,20 +86,6 @@ def extract_vehicle_metadata(vehicle: Vehicle) -> dict:
 
     return metadata
 
-def extract_camera_metadata(camera_dict: dict) -> dict:
-    # Split the camera dictionary into the camera sensor and its field of view
-    camera = camera_dict['camera']
-    fov_y = camera_dict['fov_y']
-
-    # Extract metadata from the camera sensor into a dictionary
-    metadata = {
-        'fov': fov_y,
-        'resolution': camera.resolution,
-        'near_far_planes': camera.near_far_planes
-    }
-    logging_mgr.log_action(f'Camera "{camera.name}" metadata extracted.')
-
-    return metadata
 
 def combine_metadata(metadata_array: list) -> dict:
     # Combine all metadata into a single dictionary

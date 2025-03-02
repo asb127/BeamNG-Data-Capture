@@ -32,27 +32,21 @@ scenario_mgr.initialize_scenario(bng,
 
 # Create all camera sensors configured for the capture session
 camera_list = []
-camera_metadata_list = []
+camera_counter = 0
 for camera_config in session.cameras:
     # Create camera sensor and attach it to the vehicle
     camera_sensor = data_capture_mgr.create_camera_sensor(bng,
                                                           ego,
-                                                          camera_config.name,
-                                                          camera_config.position,
-                                                          camera_config.resolution,
-                                                          camera_config.is_render_colours,
-                                                          camera_config.is_render_annotations,
-                                                          camera_config.is_render_depth,
-                                                          camera_config.fov_y)
+                                                          camera_config)
     # Add the camera sensor to the list
     camera_list.append(camera_sensor)
     # Extract and store the camera sensor metadata
-    camera_metadata = data_capture_mgr.extract_camera_metadata(camera_sensor)
-    # Add the camera sensor metadata to the list
-    camera_metadata_list.append(camera_metadata)
+    camera_metadata = camera_config.extract_camera_metadata()
+    # Add the camera to the counter
+    camera_counter += 1
 
 # Log a warning if no camera sensors are created for the capture session
-if (len(camera_list) == 0):
+if (camera_counter < 1):
     logging_mgr.log_warning('No camera sensors created for the capture session.')
 
 # Create an IMU sensor and attach it to the vehicle
@@ -87,10 +81,6 @@ try:
     if num_frames <= 0:
         raise ValueError('Number of frames must be a positive number.')
     
-    # Create a dictionary with all the cameras' metadata
-    camera_metadata = utils.create_parent_dict(list(map(lambda x: x['camera'].name, camera_list)),
-                                               camera_metadata_list)
-    
     # Extract and save general session metadata 
     session_metadata = session.extract_session_metadata()
     data_capture_mgr.save_metadata(session_metadata, output_dir, 'session_metadata.json')
@@ -115,7 +105,7 @@ try:
         # For each camera sensor, save the data
         for camera_sensor in camera_list:
             # Create a directory for the camera sensor inside the frame directory
-            camera_dir = utils.create_dir(frame_dir, camera_sensor['camera'].name)
+            camera_dir = utils.create_dir(frame_dir, camera_sensor.name)
             # Save the camera sensor data into the camera directory
             data_capture_mgr.save_camera_image_data(camera_sensor, camera_dir)
 
