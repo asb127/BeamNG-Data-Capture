@@ -1,6 +1,6 @@
 from typing import TypedDict, List
 
-import logging_mgr, utils
+import logging_mgr, settings, utils
 from vehicle_config import VehicleConfig
 from camera_sensor_config import CameraSensorConfig
 
@@ -20,13 +20,13 @@ class SessionConfig:
     Configuration class for a capture session.
     '''
     def __init__(self,
-                 scenario: str = 'default_scenario',
-                 duration_s: int = 10,
-                 capture_freq_hz: float = 0.5,
-                 map_name: str = 'west_coast_usa',
+                 scenario: str = settings.default_scenario,
+                 duration_s: int = settings.default_duration_s,
+                 capture_freq_hz: float = settings.default_capture_freq_hz,
+                 map_name: str = settings.default_map,
                  vehicle: VehicleConfig = VehicleConfig(),
                  cameras: List[CameraSensorConfig] = [CameraSensorConfig()],
-                 weather: str = '',
+                 weather: str = settings.default_weather,
                  num_ai_traffic_vehicles: int = 10,
                  starting_waypoint: str = ''):
         '''
