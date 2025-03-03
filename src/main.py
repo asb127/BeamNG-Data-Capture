@@ -17,13 +17,7 @@ bng = simulation_mgr.launch_beamng('localhost', 25252)
 simulation_mgr.set_simulation_steps_per_second(bng, 60)
 
 # Create a scenario and vehicle for the capture session usign the session configuration
-scenario, ego = scenario_mgr.create_scenario(bng,
-                                             session.map,
-                                             session.name,
-                                             session.vehicle.name,
-                                             session.vehicle.model,
-                                             session.vehicle.initial_position,
-                                             session.vehicle.initial_rotation)
+scenario, ego = scenario_mgr.create_scenario(bng, session)
 
 # Initialize the scenario in the simulator
 scenario_mgr.initialize_scenario(bng,
