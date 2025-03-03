@@ -1,4 +1,4 @@
-import os, json
+import os, json, zipfile
 from datetime import datetime
 from typing import List
 
@@ -59,15 +59,62 @@ def create_parent_dict(keys: List[str], values: List[dict]) -> dict:
         logging_mgr.log_action(f'Dictionary created with keys: {list(output_dict.keys())}.')
     return output_dict
 
+def create_child_dict(parent_dict:dict, key: str) -> dict:
+    # Create a child dictionary with the provided key from the parent dictionary
+    child_dict = parent_dict.get(key, dict())
+    # If the key does not exist, log a warning
+    if not child_dict:
+        logging_mgr.log_warning(f'Child dictionary not found with key "{key}".')
+    else:
+        logging_mgr.log_action(f'Child dictionary created with key "{key}".')
+    return child_dict
+
 def save_json_file(data: dict, output_dir: str, filename: str) -> None:
     # Save the provided data as a JSON file in the output directory
     with open(os.path.join(output_dir, filename), 'w') as file:
         json.dump(data, file, indent=4)
     logging_mgr.log_action(f'JSON file "{filename}" saved in "{output_dir}".')
 
+def is_path_inside_zip(path: str) -> bool:
+    # Check if the provided path is contained within a ZIP file
+    return '.zip/' in path
+
 def load_json_file(file_path: str) -> dict:
-    # Load a JSON file from the provided path into an output dictionary
-    with open(file_path, 'r') as file:
-        data = json.load(file)
-    logging_mgr.log_action(f'JSON file "{file_path}" loaded.')
+    # Check if the provided path is inside a ZIP file
+    if is_path_inside_zip(file_path):
+        # Split the path into the ZIP file and the file inside it
+        zip_path, file_inside_zip = file_path.split('.zip', 1)
+        # Preserve the '.zip' extension in the ZIP file path
+        zip_path += '.zip'
+        # Remove the leading slash from the file inside the ZIP
+        file_inside_zip = file_inside_zip[1:]
+        # Open the ZIP file and read the JSON file inside, storing the data in an output dictionary
+        with open_zip_file(zip_path) as zip_file:
+            data = read_json_file_inside_zip(zip_file, file_inside_zip)
+    else:
+        # Load a JSON file from the provided path into an output dictionary
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+            logging_mgr.log_action(f'JSON file "{file_path}" loaded.')
     return data
+
+def open_zip_file(file_path: str) -> zipfile.ZipFile:
+    # Open the provided ZIP file
+    zip_file = zipfile.ZipFile(file_path, 'r')
+    logging_mgr.log_action(f'ZIP file "{file_path}" opened.')
+    return zip_file
+
+def read_file_inside_zip(zip_file: zipfile.ZipFile, file_path: str) -> str:
+    # Read the provided file inside the ZIP file
+    with zip_file.open(file_path) as file:
+        data = file.read()
+    logging_mgr.log_action(f'File "{file_path}" read inside ZIP file.')
+    return data
+
+def read_json_file_inside_zip(zip_file: zipfile.ZipFile, file_path: str) -> dict:
+    # Read the provided JSON file inside the ZIP file
+    data = read_file_inside_zip(zip_file, file_path)
+    # Decode the data into a dictionary
+    dictionary = json.loads(data)
+    logging_mgr.log_action(f'JSON file "{file_path}" read inside ZIP file.')
+    return dictionary

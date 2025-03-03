@@ -2,14 +2,15 @@ from beamngpy import BeamNGpy
 from beamngpy.vehicle import Vehicle
 from beamngpy.scenario import Scenario
 
-import logging_mgr
+import logging_mgr, settings
 
 # Global variable to store the simulation steps per second
 simulation_steps_per_second: int = 0
 
-def launch_beamng(host: str, port: int) -> BeamNGpy:
-    # Instantiate BeamNGpy instance connecting to the simulator on the given host and port
-    bng = BeamNGpy(host, port)
+def launch_beamng() -> BeamNGpy:
+    # Instantiate BeamNGpy instance connecting to the simulator
+    # Uses the specified settings for host, port and home path
+    bng = BeamNGpy(settings.beamng_host, settings.beamng_port, settings.beamng_home_path)
     # Launch the simulator
     bng.open()
     return bng

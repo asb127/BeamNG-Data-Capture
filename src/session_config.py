@@ -11,18 +11,22 @@ class SessionConfigDict(TypedDict):
     map: str
     vehicle: VehicleConfig
     cameras: List[CameraSensorConfig]
+    weather: str
+    num_ai_traffic_vehicles: int
 
 class SessionConfig:
     '''
     Configuration class for a capture session.
     '''
     def __init__(self,
-                 scenario: str = 'default_sccenario',
+                 scenario: str = 'default_scenario',
                  duration_s: int = 10,
                  capture_freq_hz: float = 0.5,
                  map_name: str = 'west_coast_usa',
                  vehicle: VehicleConfig = VehicleConfig(),
-                 cameras: List[CameraSensorConfig] = [CameraSensorConfig()]):
+                 cameras: List[CameraSensorConfig] = [CameraSensorConfig()],
+                 weather: str = '',
+                 num_ai_traffic_vehicles: int = 10):
         '''
         Initialize a new session configuration with the provided parameters.
         '''
@@ -32,6 +36,8 @@ class SessionConfig:
         self._map = map_name
         self._vehicle = vehicle
         self._cameras = cameras
+        self._weather = weather
+        self._num_ai_traffic_vehicles = num_ai_traffic_vehicles
 
     @property
     def scenario(self) -> str:
@@ -97,6 +103,28 @@ class SessionConfig:
         '''Set the camera configurations for the capture session.'''
         self._cameras = cameras
 
+    @property
+    def weather(self) -> str:
+        '''Get the weather condition for the capture session.'''
+        return self._weather
+
+    @weather.setter
+    def weather(self, weather: str) -> None:
+        '''Set the weather condition for the capture session.'''
+        self._weather = weather
+
+    @property
+    def num_ai_traffic_vehicles(self) -> int:
+        '''Get the number of AI traffic vehicles for the capture session.'''
+        return self._num_ai_traffic_vehicles
+
+    @num_ai_traffic_vehicles.setter
+    def num_ai_traffic_vehicles(self, num: int) -> None:
+        '''Set the number of AI traffic vehicles for the capture session.'''
+        if num < 0:
+            raise ValueError('Number of AI traffic vehicles must be a non-negative number.')
+        self._num_ai_traffic_vehicles = num
+
     def to_dict(self) -> SessionConfigDict:
         '''Convert this session configuration to a dictionary.'''
         generated_dict = {
@@ -105,7 +133,9 @@ class SessionConfig:
             'capture_freq_hz': self._capture_freq_hz,
             'map': self._map,
             'vehicle': self._vehicle.to_dict(),
-            'cameras': [camera.to_dict() for camera in self._cameras]
+            'cameras': [camera.to_dict() for camera in self._cameras],
+            'weather': self._weather,
+            'num_ai_traffic_vehicles': self._num_ai_traffic_vehicles
         }
         return generated_dict
 
@@ -118,6 +148,8 @@ class SessionConfig:
         self._vehicle = VehicleConfig()
         self._vehicle.from_dict(config_dict['vehicle'])
         self._cameras = [CameraSensorConfig().from_dict(camera) for camera in config_dict['cameras']]
+        self._weather = config_dict['weather']
+        self._num_ai_traffic_vehicles = config_dict['num_ai_traffic_vehicles']
 
     def extract_session_metadata(self) -> SessionConfigDict:
         '''
@@ -128,7 +160,9 @@ class SessionConfig:
         metadata = {
             'duration_s': self.duration_s,
             'capture_freq_hz': self.capture_freq_hz,
-            'cameras': [camera.extract_camera_metadata() for camera in self.cameras]
+            'cameras': [camera.extract_camera_metadata() for camera in self.cameras],
+            'weather': self.weather,
+            'num_ai_traffic_vehicles': self.num_ai_traffic_vehicles
         }
         return metadata
 

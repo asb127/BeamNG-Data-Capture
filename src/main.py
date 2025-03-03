@@ -1,8 +1,7 @@
-import data_capture_mgr, simulation_mgr, scenario_mgr, logging_mgr, session_config, utils
+import data_capture_mgr, simulation_mgr, scenario_mgr, logging_mgr, session_config, settings, utils
 
 # Create an output directory to store the session data
-root_dir = utils.return_documents_path()
-output_dir = utils.create_output_dir(root_dir)
+output_dir = utils.create_output_dir(settings.output_root_path)
 
 # Set up logging for the data capture process
 logging_mgr.configure_logging(output_dir)
@@ -10,23 +9,26 @@ logging_mgr.configure_logging(output_dir)
 # Create the session configuration
 session = session_config.create_session_config()
 
+# Refresh the available weather presets
+scenario_mgr.get_weather_presets()
+
 # Create BeamNGpy instance and connect to the simulator
-bng = simulation_mgr.launch_beamng('localhost', 25252)
+bng = simulation_mgr.launch_beamng()
 
 # Set simulation steps per second to 60
 simulation_mgr.set_simulation_steps_per_second(bng, 60)
 
-# Create a scenario and vehicle for the capture session usign the session configuration
+# Create a scenario and vehicle for the capture session using the session configuration
 scenario, ego = scenario_mgr.create_scenario(bng, session)
 
-# Initialize the scenario in the simulator
+# Initialize the scenario in the simulator with the specified number of AI traffic vehicles
 scenario_mgr.initialize_scenario(bng,
                                  scenario,
-                                 ego)
+                                 ego,
+                                 session)
 
 # Create all camera sensors configured for the capture session
 camera_list = []
-camera_counter = 0
 for camera_config in session.cameras:
     # Create camera sensor and attach it to the vehicle
     camera_sensor = data_capture_mgr.create_camera_sensor(bng,
@@ -36,11 +38,9 @@ for camera_config in session.cameras:
     camera_list.append(camera_sensor)
     # Extract and store the camera sensor metadata
     camera_metadata = camera_config.extract_camera_metadata()
-    # Add the camera to the counter
-    camera_counter += 1
 
 # Log a warning if no camera sensors are created for the capture session
-if (camera_counter < 1):
+if not camera_list:
     logging_mgr.log_warning('No camera sensors created for the capture session.')
 
 # Create an IMU sensor and attach it to the vehicle
@@ -104,18 +104,18 @@ try:
             data_capture_mgr.save_camera_image_data(camera_sensor, camera_dir)
 
         # Extract, combine and save the metadata to the frame directory
-        vehicle_metadata = data_capture_mgr.extract_vehicle_metadata(ego)
-        imu_metadata = data_capture_mgr.extract_imu_data(sensor_imu)
-
-        metadata_array = [imu_metadata,
-                          vehicle_metadata]
-        frame_metadata = utils.combine_dict(metadata_array)
+        frame_metadata = []
+        frame_metadata.append(data_capture_mgr.extract_vehicle_metadata(ego))
+        frame_metadata.append(data_capture_mgr.extract_imu_data(sensor_imu))
 
         data_capture_mgr.save_metadata(frame_metadata, frame_dir)
         simulation_mgr.display_message(bng, f'Frame {i} captured.')
 except KeyboardInterrupt:
     # User stopped the simulation process
     logging_mgr.log_action('Simulation stopped by user.')
+except ValueError as e:
+    # A value error stopped the simulation process
+    logging_mgr.log_error(f'Simulation stopped by a value error: {e}')
 except Exception as e:
     # An unexpected error stopped the simulation process
     logging_mgr.log_error(f'Simulation stopped by an unexpected error: {e}')
