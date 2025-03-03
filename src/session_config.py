@@ -5,7 +5,7 @@ from vehicle_config import VehicleConfig
 from camera_sensor_config import CameraSensorConfig
 
 class SessionConfigDict(TypedDict):
-    name: str
+    scenario: str
     duration_s: int
     capture_freq_hz: float
     map: str
@@ -17,7 +17,7 @@ class SessionConfig:
     Configuration class for a capture session.
     '''
     def __init__(self,
-                 name: str = 'default_session',
+                 scenario: str = 'default_sccenario',
                  duration_s: int = 10,
                  capture_freq_hz: float = 0.5,
                  map_name: str = 'west_coast_usa',
@@ -26,7 +26,7 @@ class SessionConfig:
         '''
         Initialize a new session configuration with the provided parameters.
         '''
-        self._name = name
+        self._scenario = scenario
         self._duration_s = duration_s
         self._capture_freq_hz = capture_freq_hz
         self._map = map_name
@@ -34,14 +34,14 @@ class SessionConfig:
         self._cameras = cameras
 
     @property
-    def name(self) -> str:
-        '''Get the name of the session configuration.'''
-        return self._name
+    def scenario(self) -> str:
+        '''Get the scenario name of the session configuration.'''
+        return self._scenario
 
-    @name.setter
-    def name(self, name: str) -> None:
-        '''Set the name of the session configuration.'''
-        self._name = name
+    @scenario.setter
+    def scenario(self, scenario: str) -> None:
+        '''Set the scenario name of the session configuration.'''
+        self._scenario = scenario
 
     @property
     def duration_s(self) -> int:
@@ -100,7 +100,7 @@ class SessionConfig:
     def to_dict(self) -> SessionConfigDict:
         '''Convert this session configuration to a dictionary.'''
         generated_dict = {
-            'name': self._name,
+            'scenario': self._scenario,
             'duration_s': self._duration_s,
             'capture_freq_hz': self._capture_freq_hz,
             'map': self._map,
@@ -111,7 +111,7 @@ class SessionConfig:
 
     def from_dict(self, config_dict: SessionConfigDict) -> None:
         '''Load a session configuration from a dictionary.'''
-        self._name = config_dict['name']
+        self._scenario = config_dict['scenario']
         self._duration_s = config_dict['duration_s']
         self._capture_freq_hz = config_dict['capture_freq_hz']
         self._map = config_dict['map']
@@ -123,7 +123,7 @@ class SessionConfig:
         '''
         Extract session metadata from the provided configuration.
         
-        Only includes fields relevant as training data (excludes name, map, and vehicle).
+        Only includes fields relevant as training data (excludes scenario, map, and vehicle).
         '''
         metadata = {
             'duration_s': self.duration_s,

@@ -2,6 +2,7 @@ import random
 from beamngpy import BeamNGpy, Scenario, Vehicle
 
 import simulation_mgr, logging_mgr
+from session_config import SessionConfig
 
 def randomize_vehicle_color(vehicle: Vehicle) -> None:
     vehicle.set_color((random.uniform(0, 1),
@@ -25,26 +26,20 @@ def add_vehicle(scenario: Scenario,
     # Return the created vehicle
     return vehicle
 
-def create_scenario(bng: BeamNGpy,
-                    map_name: str,
-                    scenario_name: str,
-                    ego_vehicle_name: str,
-                    model: str,
-                    pos: tuple,
-                    rot_quat: tuple) -> tuple:
+def create_scenario(bng: BeamNGpy, session: SessionConfig) -> tuple:
     # Create a scenario in the given map
-    scenario = Scenario(map_name, scenario_name)
-    logging_mgr.log_action(f'Scenario "{scenario_name}" created in map "{map_name}".')
+    scenario = Scenario(session.map, session.scenario)
+    logging_mgr.log_action(f'Scenario "{session.scenario}" created in map "{session.map}".')
     # Create an "ego vehicle" to capture data from
     ego = add_vehicle(scenario,
-                      ego_vehicle_name,
-                      model,
-                      pos,
-                      rot_quat)
-    logging_mgr.log_action(f'Ego vehicle "{ego_vehicle_name}" added to scenario.')
+                      session.vehicle.name,
+                      session.vehicle.model,
+                      session.vehicle.initial_position,
+                      session.vehicle.initial_rotation)
+    logging_mgr.log_action(f'Ego vehicle "{session.vehicle.name}" added to scenario.')
     # Place files defining the scenario for the simulator to read
     scenario.make(bng)
-    logging_mgr.log_action(f'Scenario "{scenario_name}" files created.')
+    logging_mgr.log_action(f'Scenario "{session.scenario}" files created.')
     # Return the created scenario and the "ego" vehicle
     return scenario, ego
 
