@@ -9,6 +9,7 @@ from session_config import SessionConfig
 weather_presets: List[str] = []
 
 def randomize_vehicle_color(vehicle: Vehicle) -> None:
+    '''Sets the color of the vehicle to a random RGBA color.'''
     vehicle.set_color((random.uniform(0, 1),
                        random.uniform(0, 1),
                        random.uniform(0, 1),
@@ -19,6 +20,7 @@ def add_vehicle(scenario: Scenario,
                 model: str,
                 pos: tuple,
                 rot_quat: tuple) -> Vehicle:
+    '''Add a vehicle to the scenario with the provided name, model, position and rotation.'''
     # Create a vehicle with the provided name and model
     vehicle = Vehicle(vehicle_name, model=model)
     logging_mgr.log_action(f'Vehicle created: "{vehicle_name}" (model "{model}").')
@@ -31,6 +33,7 @@ def add_vehicle(scenario: Scenario,
     return vehicle
 
 def create_scenario(bng: BeamNGpy, session: SessionConfig) -> tuple:
+    '''Create a scenario based on the provided session configuration.'''
     # Create a scenario in the given map
     scenario = Scenario(session.map, session.scenario)
     logging_mgr.log_action(f'Scenario "{session.scenario}" created in map "{session.map}".')
@@ -51,6 +54,10 @@ def initialize_scenario(bng: BeamNGpy,
                         scenario: Scenario,
                         ego_vehicle: Vehicle,
                         session_config: SessionConfig) -> None:
+    '''
+    Initialize the scenario in the simulator with the given ego vehicle.
+    Also sets the specified weather and number of AI traffic vehicles.
+    '''
     # Load and start the scenario in the simulator
     simulation_mgr.load_scenario(bng, scenario)
     simulation_mgr.start_scenario(bng)
@@ -68,12 +75,12 @@ def initialize_scenario(bng: BeamNGpy,
 def set_vehicle_ai_mode(vehicle: Vehicle,
                         mode: str,
                         in_lane: bool) -> None:
-    # Set the vehicle's AI mode and lane driving behavior
+    '''Set the vehicle's AI mode and lane driving behavior to the provided values.'''
     vehicle.ai.set_mode(mode)
     vehicle.ai.drive_in_lane(in_lane)
 
 def get_weather_presets() -> None:
-    # Store the available weather presets into the global variable 'weather_presets'
+    '''Load the available weather presets from the settings file into the global variable "weather_presets".'''
     global weather_presets
     # Load the weather presets from the path specified in the settings
     weather_presets = utils.load_json_file(settings.weather_presets_path).keys()
@@ -83,14 +90,19 @@ def get_weather_presets() -> None:
     else:
         logging_mgr.log_warning('No weather presets file found. Weather presets will not be available.')
 
-def set_weather_preset(bng: BeamNGpy, weather_preset: str, time: float = 1) -> None:
-    # Set the provided weather preset in the simulator
+def set_weather_preset(bng: BeamNGpy, weather_preset: str, transition_time: float = 1) -> None:
+    '''
+    Set the weather preset for the simulator to the provided preset.
+
+    A transition time can be specified to smooth the weather change.
+    '''
     # If no weather preset is provided, skip
     if not weather_preset:
         logging_mgr.log_action('No weather preset provided. Skipping weather preset configuration.')
     # If the weather preset is not available, log a warning
     elif weather_preset not in weather_presets:
         logging_mgr.log_warning(f'Weather preset "{weather_preset}" not available.')
+    # Otherwise, proceed with setting the weather preset
     else:
-        bng.set_weather_preset(weather_preset, time)
+        bng.set_weather_preset(weather_preset, transition_time)
         logging_mgr.log_action(f'Set weather preset to {weather_preset}.')
