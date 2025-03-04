@@ -5,7 +5,7 @@ from typing import List
 
 import logging_mgr, utils
 from camera_sensor_config import CameraSensorConfig
-from custom_types import StrDict
+from beamngpy.types import StrDict
 
 def create_camera_sensor(bng: BeamNGpy,
                          vehicle: Vehicle,

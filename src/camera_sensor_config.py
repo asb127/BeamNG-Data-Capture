@@ -1,11 +1,11 @@
 from typing import TypedDict
 
-from custom_types import Float3, Dimensions2D, StrDict
+from beamngpy.types import Float3, Int2, StrDict
 
 class CameraSensorConfigDict(TypedDict):
     name: str
     position: Float3
-    resolution: Dimensions2D
+    resolution: Int2
     is_render_colours: bool
     is_render_annotations: bool
     is_render_depth: bool
@@ -19,7 +19,7 @@ class CameraSensorConfig:
     def __init__(self,
                  name: str = 'sensor_camera',
                  position: Float3 = (0, -0.5, 1.5),
-                 resolution: Dimensions2D = (1280, 720),
+                 resolution: Int2 = (1280, 720),
                  is_render_colours: bool = True,
                  is_render_annotations: bool = True,
                  is_render_depth: bool = True,
@@ -58,12 +58,12 @@ class CameraSensorConfig:
         self._position = position
 
     @property
-    def resolution(self) -> Dimensions2D:
+    def resolution(self) -> Int2:
         '''Get the resolution of the camera sensor (width, height).'''
         return self._resolution
 
     @resolution.setter
-    def resolution(self, resolution: Dimensions2D) -> None:
+    def resolution(self, resolution: Int2) -> None:
         '''Set the resolution of the camera sensor (width, height).'''
         self._resolution = resolution
 

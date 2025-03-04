@@ -1,6 +1,7 @@
 from typing import TypedDict
 
-from custom_types import Float3, Quat
+import settings
+from beamngpy.types import Float3, Quat
 
 class VehicleConfigDict(TypedDict):
     name: str
@@ -13,8 +14,8 @@ class VehicleConfig:
     Configuration class for a vehicle.
     '''
     def __init__(self,
-                 name: str = 'ego',
-                 model: str = 'etk800',
+                 name: str = settings.default_vehicle_name,
+                 model: str = settings.default_vehicle_model,
                  initial_position: Float3 = (-720, 100, 119),
                  initial_rotation: Quat = (0, 0, 0.35, 0.90)):
         '''

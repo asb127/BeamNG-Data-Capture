@@ -3,7 +3,7 @@ from beamngpy.vehicle import Vehicle
 from beamngpy.scenario import Scenario
 
 import logging_mgr, settings
-from custom_types import StrDict
+from beamngpy.types import StrDict
 
 # Global variable to store the simulation steps per second
 simulation_steps_per_second: int = 0
