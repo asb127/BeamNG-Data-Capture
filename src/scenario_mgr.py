@@ -78,6 +78,7 @@ def set_vehicle_ai_mode(vehicle: Vehicle,
     '''Set the vehicle's AI mode and lane driving behavior to the provided values.'''
     vehicle.ai.set_mode(mode)
     vehicle.ai.drive_in_lane(in_lane)
+    logging_mgr.log_action(f'Set AI mode to {mode} and in-lane driving to {in_lane}.')
 
 def get_weather_presets() -> None:
     '''Load the available weather presets from the settings file into the global variable "weather_presets".'''

@@ -104,11 +104,12 @@ try:
             data_capture_mgr.save_camera_image_data(camera_sensor, camera_dir)
 
         # Extract, combine and save the metadata to the frame directory
-        frame_metadata = []
-        frame_metadata.append(data_capture_mgr.extract_vehicle_metadata(ego))
-        frame_metadata.append(data_capture_mgr.extract_imu_data(sensor_imu))
+        frame_metadata_list = []
+        frame_metadata_list.append(data_capture_mgr.extract_vehicle_metadata(ego))
+        frame_metadata_list.append(data_capture_mgr.extract_imu_data(sensor_imu))
+        frame_metadata_dict = utils.combine_dict(frame_metadata_list)
 
-        data_capture_mgr.save_metadata(frame_metadata, frame_dir)
+        data_capture_mgr.save_metadata(frame_metadata_dict, frame_dir)
         simulation_mgr.display_message(bng, f'Frame {i} captured.')
 except KeyboardInterrupt:
     # User stopped the simulation process

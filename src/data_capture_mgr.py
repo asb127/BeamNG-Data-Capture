@@ -1,9 +1,11 @@
 from beamngpy.sensors import Camera, AdvancedIMU
 from beamngpy import BeamNGpy
 from beamngpy.vehicle import Vehicle
+from typing import List
 
 import logging_mgr, utils
 from camera_sensor_config import CameraSensorConfig
+from custom_types import StrDict
 
 def create_camera_sensor(bng: BeamNGpy,
                          vehicle: Vehicle,
@@ -50,7 +52,7 @@ def save_camera_image_data(camera: Camera, output_dir: str) -> None:
     semantic_image.save(utils.join_paths(output_dir, 'semantic.png'))
     logging_mgr.log_action(f'Camera "{camera.name}" data saved in "{output_dir}".')
 
-def extract_imu_data(imu: AdvancedIMU) -> dict:
+def extract_imu_data(imu: AdvancedIMU) -> StrDict:
     # Extract data from the IMU sensor into a dictionary
     imu_data = imu.poll()
     logging_mgr.log_action(f'IMU "{imu.name}" data polled.')
@@ -66,7 +68,7 @@ def extract_imu_data(imu: AdvancedIMU) -> dict:
 
     return imu_data_concise
 
-def extract_vehicle_metadata(vehicle: Vehicle) -> dict:
+def extract_vehicle_metadata(vehicle: Vehicle) -> StrDict:
     # Poll the vehicle sensors
     vehicle.sensors.poll()
     logging_mgr.log_action(f'Vehicle "{vehicle.vid}" sensors polled.')
@@ -85,15 +87,6 @@ def extract_vehicle_metadata(vehicle: Vehicle) -> dict:
     logging_mgr.log_action(f'Vehicle "{vehicle.vid}" metadata extracted.')
 
     return metadata
-
-
-def combine_metadata(metadata_array: list) -> dict:
-    # Combine all metadata into a single dictionary
-    combined_metadata = {}
-    for metadata in metadata_array:
-        combined_metadata.update(metadata)
-    logging_mgr.log_action('Metadata array combined.')
-    return combined_metadata
 
 def save_metadata(metadata: dict,
                   output_dir: str,

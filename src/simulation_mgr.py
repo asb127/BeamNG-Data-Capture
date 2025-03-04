@@ -3,6 +3,7 @@ from beamngpy.vehicle import Vehicle
 from beamngpy.scenario import Scenario
 
 import logging_mgr, settings
+from custom_types import StrDict
 
 # Global variable to store the simulation steps per second
 simulation_steps_per_second: int = 0
@@ -52,18 +53,21 @@ def start_scenario(bng: BeamNGpy) -> None:
     # Start the scenario in the simulator
     bng.start_scenario()
 
-def set_vehicle_ai_mode(vehicle: Vehicle,
-                        mode: str,
-                        in_lane: bool) -> None:
-    # Set the vehicle's AI mode and lane driving behavior
-    vehicle.ai.set_mode(mode)
-    vehicle.ai.drive_in_lane(in_lane)
-    logging_mgr.log_action(f'Set AI mode to {mode} and in-lane driving to {in_lane}.')
-
 def enable_traffic(bng: BeamNGpy, max_traffic_amount: int) -> None:
     # Enable or disable AI traffic in the scenario
     bng.traffic.spawn(max_amount=max_traffic_amount)
     logging_mgr.log_action(f'Enabling AI traffic with a maximum of {max_traffic_amount} vehicles.')
+
+def get_time_of_day(bng: BeamNGpy) -> StrDict:
+    # Get the current time of day in the simulator
+    tod = bng.env.get_tod()
+    logging_mgr.log_action(f'Simulation time of day retrieved: {tod["time"]}')
+    return tod
+
+def set_time_of_day(bng: BeamNGpy, time_of_day: float) -> None:
+    # Set the time of day in the simulator (0.0 to 1.0)
+    bng.env.set_tod(tod=time_of_day)
+    logging_mgr.log_action(f'Set simulation time of day to {time_of_day}.')
 
 def display_message(bng: BeamNGpy, message: str) -> None:
     # Display a message on the simulator's UI

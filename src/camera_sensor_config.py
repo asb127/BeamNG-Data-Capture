@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from custom_types import Float3, Dimensions2D
+from custom_types import Float3, Dimensions2D, StrDict
 
 class CameraSensorConfigDict(TypedDict):
     name: str
@@ -141,7 +141,7 @@ class CameraSensorConfig:
         self._fov_y = config_dict['fov_y']
         self._near_far_planes = config_dict['near_far_planes']
 
-    def extract_camera_metadata(self) -> dict:
+    def extract_camera_metadata(self) -> StrDict:
         '''
         Extract metadata from the camera sensor configuration.
         
