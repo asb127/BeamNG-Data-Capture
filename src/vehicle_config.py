@@ -33,8 +33,13 @@ class VehicleConfig:
 
     @name.setter
     def name(self, name: str) -> None:
-        '''Set the name of the vehicle.'''
-        self._name = name
+        '''
+        Set the name of the vehicle.
+        
+        The name cannot be empty.
+        '''
+        if not name:
+            raise ValueError('Vehicle name cannot be empty.')
 
     @property
     def model(self) -> str:
@@ -49,7 +54,7 @@ class VehicleConfig:
         If the provided model is not supported, a warning is logged and the default vehicle model is used.
         If the default vehicle model is not supported, a ValueError is raised.
         '''
-        if model not in settings.supported_models:
+        if not model or model not in settings.supported_models:
             if settings.default_vehicle_model in settings.supported_models:
                 logging_mgr.log_warning(f'Vehicle model "{model}" is not supported. Using default vehicle model "{settings.default_vehicle_model}".')
                 model = settings.default_vehicle_model
@@ -94,7 +99,10 @@ class VehicleConfig:
         self._initial_rotation = config_dict['initial_rotation']
 
     def validate(self) -> None:
-        '''Validate the vehicle configuration.'''
+        '''Validate the vehicle configuration. Same restrictions as setters.'''
+        # Validate the vehicle name
+        if not self._name:
+            raise ValueError('Vehicle name cannot be empty.')
         # Validate the vehicle model
-        if self._model not in settings.supported_models:
+        if not self._model or self._model not in settings.supported_models:
             raise ValueError(f'Vehicle model "{self._model}" is not supported.')

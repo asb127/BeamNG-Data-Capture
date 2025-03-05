@@ -18,7 +18,7 @@ output_root_path: str = utils.return_documents_path()
 
 # Vehicles
 # - Here are defined the vehicle settings used by the application
-default_vehicle_name: str = ''
+default_vehicle_name: str = 'ego'
 default_vehicle_model: str = 'etk800'
 default_vehicle_initial_position: Float3 = (-720, 100, 119),
 default_vehicle_initial_rotation: Quat = (0, 0, 0.35, 0.90)
