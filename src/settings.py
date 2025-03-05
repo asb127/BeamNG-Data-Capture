@@ -10,11 +10,19 @@ beamng_host: str = 'localhost'
 beamng_port: int = 25252
 random_seed: int = 42
 
-# Routes
-# - Here are defined the routes used by the application
+# Paths
+# - Here are defined the paths used by the application
 beamng_home_path: str = os.getenv('BNG_HOME')
 weather_presets_path: str = os.path.join(beamng_home_path, 'gameengine.zip/art/weather/defaults.json')
 output_root_path: str = utils.return_documents_path()
+
+# Sessions
+# - Here are defined the session settings used by the application
+default_map: str = 'west_coast_usa'
+default_scenario: str = 'default_scenario'
+default_duration_s: int = 10
+default_capture_freq_hz: float = 0.5
+default_weather: str = 'clear'
 
 # Vehicles
 # - Here are defined the vehicle settings used by the application

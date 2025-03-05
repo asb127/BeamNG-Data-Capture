@@ -1,4 +1,4 @@
-import json, random, os, zipfile
+import json, os, random, zipfile
 from datetime import datetime
 from typing import List
 
@@ -8,6 +8,14 @@ def set_random_seed(seed: int) -> None:
     # Set the random seed for reproducibility
     random.seed(seed)
     logging_mgr.log_action(f'Random seed set to {seed}.')
+
+def get_random_float(min_value: float, max_value: float) -> float:
+    # Generate a random float between the specified minimum and maximum values
+    return random.uniform(min_value, max_value)
+
+def select_random_item(items: List) -> object:
+    # Select a random item from the provided list
+    return random.choice(items)
 
 def accept_string_args(*args) -> List[str]:
     # Only accept non-empty string arguments
