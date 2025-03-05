@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-import settings
+import logging_mgr, settings
 from beamngpy.types import Float3, Quat
 
 class VehicleConfigDict(TypedDict):
@@ -16,8 +16,8 @@ class VehicleConfig:
     def __init__(self,
                  name: str = settings.default_vehicle_name,
                  model: str = settings.default_vehicle_model,
-                 initial_position: Float3 = (-720, 100, 119),
-                 initial_rotation: Quat = (0, 0, 0.35, 0.90)):
+                 initial_position: Float3 = settings.default_vehicle_initial_position,
+                 initial_rotation: Quat = settings.default_vehicle_initial_rotation):
         '''
         Initialize a new vehicle configuration with the provided parameters.
         '''
@@ -43,7 +43,18 @@ class VehicleConfig:
 
     @model.setter
     def model(self, model: str) -> None:
-        '''Set the model of the vehicle.'''
+        '''
+        Set the model of the vehicle.
+        
+        If the provided model is not supported, a warning is logged and the default vehicle model is used.
+        If the default vehicle model is not supported, a ValueError is raised.
+        '''
+        if model not in settings.supported_models:
+            if settings.default_vehicle_model in settings.supported_models:
+                logging_mgr.log_warning(f'Vehicle model "{model}" is not supported. Using default vehicle model "{settings.default_vehicle_model}".')
+                model = settings.default_vehicle_model
+            else:
+                raise ValueError(f'Default vehicle model "{settings.default_vehicle_model}" is not supported.')
         self._model = model
 
     @property
@@ -81,3 +92,9 @@ class VehicleConfig:
         self._model = config_dict['model']
         self._initial_position = config_dict['initial_position']
         self._initial_rotation = config_dict['initial_rotation']
+
+    def validate(self) -> None:
+        '''Validate the vehicle configuration.'''
+        # Validate the vehicle model
+        if self._model not in settings.supported_models:
+            raise ValueError(f'Vehicle model "{self._model}" is not supported.')

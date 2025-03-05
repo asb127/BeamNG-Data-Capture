@@ -1,8 +1,13 @@
-import os, json, zipfile
+import json, random, os, zipfile
 from datetime import datetime
 from typing import List
 
 import logging_mgr
+
+def set_random_seed(seed: int) -> None:
+    # Set the random seed for reproducibility
+    random.seed(seed)
+    logging_mgr.log_action(f'Random seed set to {seed}.')
 
 def accept_string_args(*args) -> List[str]:
     # Only accept non-empty string arguments

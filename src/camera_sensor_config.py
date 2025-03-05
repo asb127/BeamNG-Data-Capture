@@ -1,5 +1,6 @@
 from typing import TypedDict
 
+import settings
 from beamngpy.types import Float3, Int2, StrDict
 
 class CameraSensorConfigDict(TypedDict):
@@ -17,14 +18,14 @@ class CameraSensorConfig:
     Configuration class for a camera sensor.
     '''
     def __init__(self,
-                 name: str = 'sensor_camera',
-                 position: Float3 = (0, -0.5, 1.5),
-                 resolution: Int2 = (1280, 720),
-                 is_render_colours: bool = True,
-                 is_render_annotations: bool = True,
-                 is_render_depth: bool = True,
-                 fov_y: int = 70,
-                 near_far_planes: tuple = (0.1, 1000.0)):
+                 name: str = settings.default_camera_name,
+                 position: Float3 = settings.default_camera_position,
+                 resolution: Int2 = settings.default_camera_resolution,
+                 is_render_colours: bool = settings.default_camera_render_flags['colour'],
+                 is_render_annotations: bool = settings.default_camera_render_flags['annotation'],
+                 is_render_depth: bool = settings.default_camera_render_flags['depth'],
+                 fov_y: int = settings.default_camera_fov_y,
+                 near_far_planes: tuple = settings.default_camera_near_far_planes):
         '''
         Initialize a new camera sensor configuration with the provided parameters.
         '''
@@ -156,3 +157,10 @@ class CameraSensorConfig:
             'near_far_planes': self.near_far_planes
         }
         return camera_metadata
+    
+    def validate(self) -> None:
+        '''
+        Validate the camera sensor configuration.
+        '''
+        # Currently no validation is performed
+        pass

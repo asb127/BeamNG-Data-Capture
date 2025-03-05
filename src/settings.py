@@ -1,13 +1,64 @@
 import os
 import utils
+from typing import Dict, List
+
+from beamngpy.types import Float3, Quat
 
 # Variables
 # - Here are defined the setting variables used by the application
 beamng_host: str = 'localhost'
 beamng_port: int = 25252
+random_seed: int = 42
 
 # Routes
-# - Here are defined the default routes used by the application
+# - Here are defined the routes used by the application
 beamng_home_path: str = os.getenv('BNG_HOME')
 weather_presets_path: str = os.path.join(beamng_home_path, 'gameengine.zip/art/weather/defaults.json')
 output_root_path: str = utils.return_documents_path()
+
+# Vehicles
+# - Here are defined the vehicle settings used by the application
+default_vehicle_name: str = ''
+default_vehicle_model: str = 'etk800'
+default_vehicle_initial_position: Float3 = (-720, 100, 119),
+default_vehicle_initial_rotation: Quat = (0, 0, 0.35, 0.90)
+supported_models: List[str] = [
+    'autobello',
+    'barstow',
+    'bastion',
+    'bluebuck',
+    'bolide',
+    'burnside',
+    'bx',
+    'covet',
+    'etk800',
+    'etkc',
+    'etki',
+    'fullsize',
+    'hopper',
+    'lansdale',
+    'legran',
+    'midsize',
+    'miramar',
+    'moonhawk',
+    'nine',
+    'pessima',
+    'pickup',
+    'sbr',
+    'scintilla',
+    'vivace',
+    'wendover'
+    ]
+
+# Cameras
+# - Here are defined the camera settings used by the application
+default_camera_name: str = 'sensor_camera'
+default_camera_resolution: Float3 = (1280, 720)
+default_camera_render_flags: Dict[str, bool] = {
+    'colour': True,
+    'annotation': True,
+    'depth': True
+    }
+default_camera_position: Float3 = (0, -0.5, 1.5)
+default_camera_fov_y: int = 70
+default_camera_near_far_planes: tuple = (0.1, 1000.0)

@@ -1,6 +1,6 @@
 from typing import TypedDict, List
 
-import utils
+import logging_mgr, utils
 from vehicle_config import VehicleConfig
 from camera_sensor_config import CameraSensorConfig
 
@@ -165,19 +165,38 @@ class SessionConfig:
             'num_ai_traffic_vehicles': self.num_ai_traffic_vehicles
         }
         return metadata
+    
+    def validate(self) -> None:
+        '''Validate the session configuration.'''
+        try:
+            if self.duration_s <= 0:
+                raise ValueError('Duration must be a positive number.')
+            if self.capture_freq_hz <= 0:
+                raise ValueError('Capture frequency must be a positive number.')
+            if self.num_ai_traffic_vehicles < 0:
+                raise ValueError('Number of AI traffic vehicles must be a non-negative number.')
+            self.vehicle.validate()
+            for camera in self.cameras:
+                camera.validate()
+        except ValueError as e:
+            raise ValueError(f'Invalid session configuration: {e}')
 
 def create_session_config() -> SessionConfig:
     '''Create a default session configuration.'''
     session_config = SessionConfig()
+    logging_mgr.log_action('Created default session configuration.')
     return session_config
 
 def create_session_config_from_dict(config_dict: SessionConfigDict) -> SessionConfig:
     '''Create a session configuration from a dictionary.'''
     session_config = SessionConfig()
     session_config.from_dict(config_dict)
+    logging_mgr.log_action('Created session configuration from dictionary.')
     return session_config
 
 def create_session_config_from_file(file_path: str) -> SessionConfig:
     '''Create a session configuration from a file.'''
     config_dict = utils.load_json_file(file_path)
-    return SessionConfig.create_session_config(config_dict)
+    session_config = create_session_config_from_dict(config_dict)
+    logging_mgr.log_action(f'Created session configuration from file "{file_path}".')
+    return session_config

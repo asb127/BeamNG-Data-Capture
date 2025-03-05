@@ -1,13 +1,23 @@
 import data_capture_mgr, simulation_mgr, scenario_mgr, logging_mgr, session_config, settings, utils
 
+# Set random seed for reproducibility
+utils.set_random_seed(settings.random_seed)
+
 # Create an output directory to store the session data
 output_dir = utils.create_output_dir(settings.output_root_path)
 
 # Set up logging for the data capture process
 logging_mgr.configure_logging(output_dir)
 
-# Create the session configuration
-session = session_config.create_session_config()
+try:
+    # Create the session configuration
+    session = session_config.create_session_config()
+    # Validate the session configuration
+    session.validate()
+except ValueError as e:
+    # A value error occurred while creating the session configuration, the capture session is aborted
+    logging_mgr.log_error(f'Value error creating session configuration, aborting capture session: {e}')
+    quit()
 
 # Refresh the available weather presets
 scenario_mgr.get_weather_presets()
