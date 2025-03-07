@@ -8,7 +8,7 @@ from beamngpy.types import Float3, Quat
 # - Here are defined the setting variables used by the application
 beamng_host: str = 'localhost'
 beamng_port: int = 25252
-random_seed: int = 42
+random_seed: int = utils.get_time() # Can be set to a specific value for reproducibility
 
 # Paths
 # - Here are defined the paths used by the application

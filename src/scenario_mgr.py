@@ -36,28 +36,69 @@ def add_vehicle(scenario: Scenario,
     # Return the created vehicle
     return vehicle
 
-def teleport_vehicle(vehicle: Vehicle, pos: Float3, rot_quat: Quat) -> None:
+def teleport_vehicle(vehicle: Vehicle,
+                     pos: Float3,
+                     rot_quat: Quat) -> None:
     '''Teleport the vehicle to the provided position and rotation.'''
     vehicle.teleport(pos, rot_quat)
     logging_mgr.log_action(f'Vehicle {vehicle.vid} teleported to position {pos} with rotation {rot_quat}.')
 
-def teleport_vehicle_to_waypoint(vehicle: Vehicle, waypoint: str) -> None:
+def teleport_vehicle_to_waypoint(bng: BeamNGpy,
+                                 scenario: Scenario,
+                                 vehicle: Vehicle,
+                                 waypoint: str) -> None:
     '''
     Teleport the vehicle to the provided waypoint in the scenario.
 
     The waypoint must be a valid waypoint in the scenario.
+    Scenario must be loaded, otherwise an error will be triggered.
     '''
-    if not scenario_waypoints:
-        logging_mgr.log_warning('No waypoints found in the scenario. Cannot teleport vehicle to waypoint.')
+    # Scenario must be loaded in the simulator to find waypoints (get_current() doesn't match the scenario)
+    if bng.scenario.get_current(False).name != scenario.name:
+        logging_mgr.log_error(f'Scenario {scenario} must be loaded in the simulator to use waypoints.')
     else:
-        # Find the waypoint with the provided name
-        target_waypoint = next((waypoint_obj for waypoint_obj in scenario_waypoints if waypoint_obj.name == waypoint), None)
-        # If the waypoint is found, teleport the vehicle to its position and rotation
-        if target_waypoint:
-            teleport_vehicle(vehicle, target_waypoint.pos, target_waypoint.rot)
-            logging_mgr.log_action(f'Vehicle {vehicle.vid} teleported to waypoint "{waypoint}".')
+        # Check if waypoints have been found in the scenario
+        if not scenario_waypoints:
+            logging_mgr.log_warning('No waypoints found in the scenario. Cannot teleport vehicle to waypoint.')
         else:
-            logging_mgr.log_warning(f'Waypoint "{waypoint}" not found in the scenario. Vehicle not teleported.')
+            # Find the waypoint with the provided name
+            target_waypoint = next((waypoint_obj for waypoint_obj in scenario_waypoints if waypoint_obj.name == waypoint), None)
+            # If the waypoint is found, teleport the vehicle to its position and rotation
+            if target_waypoint:
+                teleport_vehicle(vehicle,
+                                 target_waypoint.pos,
+                                 target_waypoint.rot)
+                logging_mgr.log_action(f'Vehicle {vehicle.vid} teleported to waypoint "{waypoint}".')
+            else:
+                logging_mgr.log_warning(f'Waypoint "{waypoint}" not found in the scenario. Vehicle not teleported.')
+
+def teleport_vehicle_to_random_waypoint(bng: BeamNGpy,
+                                        scenario: Scenario,
+                                        vehicle: Vehicle) -> None:
+    '''Teleport the vehicle to a random waypoint in the scenario.'''
+    # Retrieve the list of waypoints in the scenario
+    waypoints_list = find_waypoints(scenario)
+    # If no waypoints are found, log a warning and skip teleporting the vehicle
+    if not waypoints_list:
+        logging_mgr.log_warning('No waypoints found in the scenario. Skipping vehicle teleportation.')
+    else:
+        # Select a random waypoint from the list
+        waypoint = utils.select_random_item(waypoints_list)
+        # Teleport the vehicle to the selected waypoint
+        teleport_vehicle_to_waypoint(bng,
+                                     scenario,
+                                     vehicle,
+                                     waypoint)
+
+
+def find_waypoints(scenario: Scenario) -> List[str]:
+    '''Find all waypoints in the scenario and return them in a list of its names.'''
+    # Use global list to store the waypoints
+    global scenario_waypoints
+    scenario_waypoints = scenario.find_waypoints()
+    logging_mgr.log_action(f'Found {len(scenario_waypoints)} waypoints in the scenario.')
+    # Return the names of the waypoints found
+    return [waypoint.name for waypoint in scenario_waypoints]
 
 def create_scenario(bng: BeamNGpy, session: SessionConfig) -> Tuple[Scenario, Vehicle]:
     '''Create a scenario based on the provided session configuration.'''
@@ -133,12 +174,3 @@ def set_weather_preset(bng: BeamNGpy, weather_preset: str, transition_time: floa
     else:
         bng.set_weather_preset(weather_preset, transition_time)
         logging_mgr.log_action(f'Set weather preset to {weather_preset}.')
-
-def find_waypoints(scenario: Scenario) -> List[str]:
-    '''Find all waypoints in the scenario and return them in a list of its names.'''
-    # Use global list to store the waypoints
-    global scenario_waypoints
-    scenario_waypoints = scenario.find_waypoints()
-    logging_mgr.log_action(f'Found {len(scenario_waypoints)} waypoints in the scenario.')
-    # Return the names of the waypoints found
-    return [waypoint.name for waypoint in scenario_waypoints]

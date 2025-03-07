@@ -13,6 +13,7 @@ class SessionConfigDict(TypedDict):
     cameras: List[CameraSensorConfig]
     weather: str
     num_ai_traffic_vehicles: int
+    starting_waypoint: str
 
 class SessionConfig:
     '''
@@ -26,7 +27,8 @@ class SessionConfig:
                  vehicle: VehicleConfig = VehicleConfig(),
                  cameras: List[CameraSensorConfig] = [CameraSensorConfig()],
                  weather: str = '',
-                 num_ai_traffic_vehicles: int = 10):
+                 num_ai_traffic_vehicles: int = 10,
+                 starting_waypoint: str = ''):
         '''
         Initialize a new session configuration with the provided parameters.
         '''
@@ -38,6 +40,7 @@ class SessionConfig:
         self._cameras = cameras
         self._weather = weather
         self._num_ai_traffic_vehicles = num_ai_traffic_vehicles
+        self._starting_waypoint = starting_waypoint
 
     @property
     def scenario(self) -> str:
@@ -125,6 +128,16 @@ class SessionConfig:
             raise ValueError('Number of AI traffic vehicles must be a non-negative number.')
         self._num_ai_traffic_vehicles = num
 
+    @property
+    def starting_waypoint(self) -> str:
+        '''Get the starting waypoint for the capture session.'''
+        return self._starting_waypoint
+
+    @starting_waypoint.setter
+    def starting_waypoint(self, waypoint: str) -> None:
+        '''Set the starting waypoint for the capture session.'''
+        self._starting_waypoint = waypoint
+
     def to_dict(self) -> SessionConfigDict:
         '''Convert this session configuration to a dictionary.'''
         generated_dict = {
@@ -135,7 +148,8 @@ class SessionConfig:
             'vehicle': self._vehicle.to_dict(),
             'cameras': [camera.to_dict() for camera in self._cameras],
             'weather': self._weather,
-            'num_ai_traffic_vehicles': self._num_ai_traffic_vehicles
+            'num_ai_traffic_vehicles': self._num_ai_traffic_vehicles,
+            'starting_waypoint': self._starting_waypoint
         }
         return generated_dict
 
@@ -150,6 +164,7 @@ class SessionConfig:
         self._cameras = [CameraSensorConfig().from_dict(camera) for camera in config_dict['cameras']]
         self._weather = config_dict['weather']
         self._num_ai_traffic_vehicles = config_dict['num_ai_traffic_vehicles']
+        self._starting_waypoint = config_dict['starting_waypoint']
 
     def extract_session_metadata(self) -> SessionConfigDict:
         '''

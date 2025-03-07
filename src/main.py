@@ -60,16 +60,9 @@ sensor_imu = data_capture_mgr.create_imu_sensor(bng,
 
 try:
     # Send vehicle to random waypoint in the scenario to start the capture session
-    # Retrieve the list of waypoints in the scenario
-    waypoints_list = scenario_mgr.find_waypoints(scenario)
-    # If no waypoints are found, log a warning and skip teleporting the vehicle
-    if not waypoints_list:
-        logging_mgr.log_warning('No waypoints found in the scenario. Skipping vehicle teleportation.')
-    else:
-        # Select a random waypoint from the list
-        waypoint = utils.select_random_item(waypoints_list)
-        # Teleport the vehicle to the selected waypoint
-        scenario_mgr.teleport_vehicle_to_waypoint(ego, waypoint)
+    scenario_mgr.teleport_vehicle_to_random_waypoint(bng,
+                                                     scenario,
+                                                     ego)
 
     # Set up session parameters
     session_length_s = session.duration_s

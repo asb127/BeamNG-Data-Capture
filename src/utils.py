@@ -4,6 +4,10 @@ from typing import List
 
 import logging_mgr
 
+def get_time() -> int:
+    # Return the current time as an integer
+    return int(datetime.now().timestamp())
+
 def set_random_seed(seed: int) -> None:
     # Set the random seed for reproducibility
     random.seed(seed)
