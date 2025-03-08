@@ -4,11 +4,12 @@ from typing import Dict, List
 
 from beamngpy.types import Float3, Quat
 
-# Variables
-# - Here are defined the setting variables used by the application
+# General variables
+# - Here are defined the general variables used by the application
 beamng_host: str = 'localhost'
 beamng_port: int = 25252
 random_seed: int = utils.get_time() # Can be set to a specific value for reproducibility
+simulation_steps_per_second: int = 60
 
 # Paths
 # - Here are defined the paths used by the application
@@ -23,6 +24,15 @@ default_scenario: str = 'default_scenario'
 default_duration_s: int = 10
 default_capture_freq_hz: float = 0.5
 default_weather: str = 'clear'
+
+# Time
+# - Here are defined the time settings used by the application
+night_time_start: str = '17:30:00'
+night_time_end: str = '06:30:00'
+play_time: bool = True
+day_scale: float = 1.0
+night_scale: float = 1.0
+day_length_s: float = 600
 
 # Vehicles
 # - Here are defined the vehicle settings used by the application
@@ -57,6 +67,7 @@ supported_models: List[str] = [
     'vivace',
     'wendover'
     ]
+headlights_intensity: int = 1
 
 # Cameras
 # - Here are defined the camera settings used by the application

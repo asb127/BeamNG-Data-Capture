@@ -1,6 +1,6 @@
 from beamngpy import BeamNGpy
 from beamngpy.scenario import Scenario
-from beamngpy.types import StrDict
+from beamngpy.types import StrDict, Time
 
 import logging_mgr, settings
 
@@ -63,10 +63,29 @@ def get_time_of_day(bng: BeamNGpy) -> StrDict:
     logging_mgr.log_action(f'Simulation time of day retrieved: {tod["time"]}')
     return tod
 
-def set_time_of_day(bng: BeamNGpy, time_of_day: float) -> None:
+def set_time_of_day(bng: BeamNGpy,
+                    time_of_day: Time | None = None,
+                    play: bool | None = None,
+                    day_scale: float | None = None,
+                    night_scale: float | None = None,
+                    day_length: float | None = None) -> None:
     # Set the time of day in the simulator (0.0 to 1.0)
-    bng.env.set_tod(tod=time_of_day)
-    logging_mgr.log_action(f'Set simulation time of day to {time_of_day}.')
+    bng.env.set_tod(tod=time_of_day,
+                    play=play,
+                    day_scale=day_scale,
+                    night_scale=night_scale,
+                    day_length=day_length)
+    # Log any changes made (values that are not None)
+    if time_of_day:
+        logging_mgr.log_action(f'Set simulation time of day to {time_of_day}.')
+    if type(play) == bool:
+        logging_mgr.log_action(f'Set time of day "play" to {play}.')
+    if day_scale:
+        logging_mgr.log_action(f'Set time of day "day scale" to {day_scale}.')
+    if night_scale:
+        logging_mgr.log_action(f'Set time of day "night scale" to {night_scale}.')
+    if day_length:
+        logging_mgr.log_action(f'Set time of day "day length" to {day_length} seconds.')
 
 def display_message(bng: BeamNGpy, message: str) -> None:
     # Display a message on the simulator's UI

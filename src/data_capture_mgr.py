@@ -1,9 +1,8 @@
 from beamngpy.sensors import Camera, AdvancedIMU
 from beamngpy import BeamNGpy
 from beamngpy.vehicle import Vehicle
-from typing import List
 
-import logging_mgr, utils
+import logging_mgr, simulation_mgr, utils
 from camera_sensor_config import CameraSensorConfig
 from beamngpy.types import StrDict
 
@@ -86,6 +85,16 @@ def extract_vehicle_metadata(vehicle: Vehicle) -> StrDict:
     }
     logging_mgr.log_action(f'Vehicle "{vehicle.vid}" metadata extracted.')
 
+    return metadata
+
+def extract_time_of_day_metadata(bng: BeamNGpy) -> StrDict:
+    '''Extract time of day metadata from the simulator.'''
+    time_of_day = simulation_mgr.get_time_of_day(bng)
+    # Extract time of day metadata into a dictionary
+    metadata = {
+        'time_of_day': time_of_day['timeStr']
+    }
+    logging_mgr.log_action('Time of day metadata extracted.')
     return metadata
 
 def save_metadata(metadata: dict,

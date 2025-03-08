@@ -1,9 +1,8 @@
 from typing import List, Tuple
 from beamngpy import BeamNGpy, Scenario, Vehicle
-from beamngpy.types import Float3, Quat
 from beamngpy.scenario.scenario_object import ScenarioObject
 
-import simulation_mgr, logging_mgr, settings, utils
+import logging_mgr, settings, simulation_mgr, vehicle_mgr, utils
 from session_config import SessionConfig
 
 # Global variable to store the available weather presets
@@ -11,37 +10,6 @@ weather_presets: List[str] = []
 
 # Global variable to store the available waypoints in the scenario
 scenario_waypoints: List[ScenarioObject] = []
-
-def randomize_vehicle_color(vehicle: Vehicle) -> None:
-    '''Sets the color of the vehicle to a random RGBA color.'''
-    vehicle.set_color((utils.get_random_float(0, 1),
-                       utils.get_random_float(0, 1),
-                       utils.get_random_float(0, 1),
-                       utils.get_random_float(0, 1)))
-
-def add_vehicle(scenario: Scenario,
-                vehicle_name: str,
-                model: str,
-                pos: Float3,
-                rot_quat: Quat) -> Vehicle:
-    '''Add a vehicle to the scenario with the provided name, model, position and rotation.'''
-    # Create a vehicle with the provided name and model
-    vehicle = Vehicle(vehicle_name, model=model)
-    logging_mgr.log_action(f'Vehicle created: "{vehicle_name}" (model "{model}").')
-    # Add the vehicle to the scenario, with the specified position and rotation
-    scenario.add_vehicle(vehicle,
-                         pos,
-                         rot_quat)
-    logging_mgr.log_action(f'Vehicle {vehicle_name} added to the scenario in position {pos} with rotation {rot_quat}.')
-    # Return the created vehicle
-    return vehicle
-
-def teleport_vehicle(vehicle: Vehicle,
-                     pos: Float3,
-                     rot_quat: Quat) -> None:
-    '''Teleport the vehicle to the provided position and rotation.'''
-    vehicle.teleport(pos, rot_quat)
-    logging_mgr.log_action(f'Vehicle {vehicle.vid} teleported to position {pos} with rotation {rot_quat}.')
 
 def teleport_vehicle_to_waypoint(bng: BeamNGpy,
                                  scenario: Scenario,
@@ -65,9 +33,9 @@ def teleport_vehicle_to_waypoint(bng: BeamNGpy,
             target_waypoint = next((waypoint_obj for waypoint_obj in scenario_waypoints if waypoint_obj.name == waypoint), None)
             # If the waypoint is found, teleport the vehicle to its position and rotation
             if target_waypoint:
-                teleport_vehicle(vehicle,
-                                 target_waypoint.pos,
-                                 target_waypoint.rot)
+                vehicle_mgr.teleport_vehicle(vehicle,
+                                             target_waypoint.pos,
+                                              target_waypoint.rot)
                 logging_mgr.log_action(f'Vehicle {vehicle.vid} teleported to waypoint "{waypoint}".')
             else:
                 logging_mgr.log_warning(f'Waypoint "{waypoint}" not found in the scenario. Vehicle not teleported.')
@@ -106,11 +74,11 @@ def create_scenario(bng: BeamNGpy, session: SessionConfig) -> Tuple[Scenario, Ve
     scenario = Scenario(session.map, session.scenario)
     logging_mgr.log_action(f'Scenario "{session.scenario}" created in map "{session.map}".')
     # Create an "ego vehicle" to capture data from
-    ego = add_vehicle(scenario,
-                      session.vehicle.name,
-                      session.vehicle.model,
-                      session.vehicle.initial_position,
-                      session.vehicle.initial_rotation)
+    ego = vehicle_mgr.add_vehicle(scenario,
+                                  session.vehicle.name,
+                                  session.vehicle.model,
+                                  session.vehicle.initial_position,
+                                  session.vehicle.initial_rotation)
     # Place files defining the scenario for the simulator to read
     scenario.make(bng)
     logging_mgr.log_action(f'Scenario "{session.scenario}" files created.')
@@ -129,23 +97,15 @@ def initialize_scenario(bng: BeamNGpy,
     simulation_mgr.load_scenario(bng, scenario)
     simulation_mgr.start_scenario(bng)
     # Set the vehicle AI mode to realistic traffic simulation
-    set_vehicle_ai_mode(ego_vehicle,
-                        'traffic',
-                        True)
+    vehicle_mgr.set_vehicle_ai_mode(ego_vehicle,
+                                    'traffic',
+                                    True)
     # Enable traffic in the scenario with the specified number of vehicles
     simulation_mgr.enable_traffic(bng, session_config.num_ai_traffic_vehicles)
     # Randomize the 'ego' vehicle's color
-    randomize_vehicle_color(ego_vehicle)
+    vehicle_mgr.randomize_vehicle_color(ego_vehicle)
     # Set weather preset for the scenario
     set_weather_preset(bng, session_config.weather)
-
-def set_vehicle_ai_mode(vehicle: Vehicle,
-                        mode: str,
-                        in_lane: bool) -> None:
-    '''Set the vehicle's AI mode and lane driving behavior to the provided values.'''
-    vehicle.ai.set_mode(mode)
-    vehicle.ai.drive_in_lane(in_lane)
-    logging_mgr.log_action(f'Set AI mode to {mode} and in-lane driving to {in_lane}.')
 
 def get_weather_presets() -> None:
     '''Load the available weather presets from the settings file into the global variable "weather_presets".'''

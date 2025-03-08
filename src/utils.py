@@ -1,4 +1,4 @@
-import json, os, random, zipfile
+import json, os, random, re, zipfile
 from datetime import datetime
 from typing import List
 
@@ -7,6 +7,50 @@ import logging_mgr
 def get_time() -> int:
     # Return the current time as an integer
     return int(datetime.now().timestamp())
+
+def beamng_time_to_hhmmss(time: float) -> str:
+    '''
+    Convert BeamNG time [0,1] to HH:MM:SS format
+    
+    Note: Both 0 and 1 in BeamNG time are 12:00:00
+    '''
+    # Convert BeamNG time to seconds (1 day = 86400 seconds)
+    seconds = time * 86400
+    # Adjust the time to start at 00:00:00
+    seconds += 43200
+    # If the time is greater than 24 hours, subtract 24 hours
+    seconds %= 86400
+    # Convert seconds to hours, minutes, and seconds
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+    # Return the time as a string in HH:MM:SS format
+    return f'{hours:02}:{minutes:02}:{seconds:02}'
+
+def hhmmss_to_beamng_time(time: str) -> float:
+    '''
+    Convert HH:MM:SS format to BeamNG time [0,1]
+    
+    Note: Both 0 and 1 in BeamNG time are 12:00:00
+    '''
+    return_time = 0.0
+    # Check the format of the time string
+    if not re.match(r'^\d{2}:\d{2}:\d{2}$', time):
+        # Log an error if the time format is invalid and return 0
+        logging_mgr.log_error('Invalid time format. Must be in HH:MM:SS format.')
+    else:
+        # Split the time string into hours, minutes, and seconds
+        hours, minutes, seconds = map(int, time.split(':'))
+        # Convert the time to seconds
+        total_seconds = hours * 3600 + minutes * 60 + seconds
+        # Adjust the time to start at 12:00:00
+        total_seconds -= 43200
+        # If the time is negative, add 24 hours
+        total_seconds %= 86400
+        # Convert the time to BeamNG time [0,1]
+        return_time = total_seconds / 86400
+    # Return the time in BeamNG format
+    return return_time
 
 def set_random_seed(seed: int) -> None:
     # Set the random seed for reproducibility

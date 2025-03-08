@@ -1,4 +1,4 @@
-import data_capture_mgr, simulation_mgr, scenario_mgr, logging_mgr, session_config, settings, utils
+import data_capture_mgr, logging_mgr, scenario_mgr, session_config, settings, simulation_mgr, vehicle_mgr, utils
 
 # Set random seed for reproducibility
 utils.set_random_seed(settings.random_seed)
@@ -25,8 +25,8 @@ scenario_mgr.get_weather_presets()
 # Create BeamNGpy instance and connect to the simulator
 bng = simulation_mgr.launch_beamng()
 
-# Set simulation steps per second to 60
-simulation_mgr.set_simulation_steps_per_second(bng, 60)
+# Set simulation steps per second
+simulation_mgr.set_simulation_steps_per_second(bng, settings.simulation_steps_per_second)
 
 # Create a scenario and vehicle for the capture session using the session configuration
 scenario, ego = scenario_mgr.create_scenario(bng, session)
@@ -94,6 +94,18 @@ try:
     session_metadata = session.extract_session_metadata()
     data_capture_mgr.save_metadata(session_metadata, output_dir, 'session_metadata.json')
 
+    # Initialize variables used for night-time checks
+    headlights_on = False
+    night_time_start = utils.hhmmss_to_beamng_time(settings.night_time_start)
+    night_time_end = utils.hhmmss_to_beamng_time(settings.night_time_end)
+
+    # Set the time of day settings for the session
+    simulation_mgr.set_time_of_day(bng,
+                                   play=settings.play_time,
+                                   day_scale=settings.day_scale,
+                                   night_scale=settings.night_scale,
+                                   day_length=settings.day_length_s)
+
     # Iterate to capture one frame
     for i in range(num_frames):
         # Pause the simulation
@@ -109,6 +121,20 @@ try:
             logging_mgr.log_error(logging_msg)
             break
 
+        # Check time of day
+        time_of_day = simulation_mgr.get_time_of_day(bng)
+        # If it's night, turn on the headlights
+        if ((time_of_day['time'] < night_time_end or time_of_day['time'] > night_time_start)
+                and not headlights_on):
+            vehicle_mgr.set_headlights(ego, settings.headlights_intensity)
+            headlights_on = True
+        # If it's day, turn off the headlights
+        elif (time_of_day['time'] >= night_time_end and time_of_day['time'] <= night_time_start
+                and headlights_on):
+            vehicle_mgr.set_headlights(ego, 0)
+            headlights_on = False
+
+        # Create a directory for the frame output
         frame_dir = utils.create_frame_output_dir(output_dir, i)
 
         # For each camera sensor, save the data
@@ -120,6 +146,7 @@ try:
 
         # Extract, combine and save the metadata to the frame directory
         frame_metadata_list = []
+        frame_metadata_list.append(data_capture_mgr.extract_time_of_day_metadata(bng))
         frame_metadata_list.append(data_capture_mgr.extract_vehicle_metadata(ego))
         frame_metadata_list.append(data_capture_mgr.extract_imu_data(sensor_imu))
         frame_metadata_dict = utils.combine_dict(frame_metadata_list)
