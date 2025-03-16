@@ -10,6 +10,7 @@ beamng_host: str = 'localhost'
 beamng_port: int = 25252
 random_seed: int = utils.get_time() # Can be set to a specific value for reproducibility
 simulation_steps_per_second: int = 60
+force_capture_freq_hz: bool = True
 
 # Paths
 # - Here are defined the paths used by the application
@@ -22,7 +23,7 @@ output_root_path: str = utils.return_documents_path()
 default_map: str = 'west_coast_usa'
 default_scenario: str = 'default_scenario'
 default_duration_s: int = 10
-default_capture_freq_hz: float = 0.5
+default_capture_freq_hz: float = 5
 default_weather: str = 'clear'
 
 # Time

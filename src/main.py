@@ -1,4 +1,5 @@
 import data_capture_mgr, logging_mgr, scenario_mgr, session_config, settings, simulation_mgr, vehicle_mgr, utils
+import time
 
 # Set random seed for reproducibility
 utils.set_random_seed(settings.random_seed)
@@ -106,20 +107,40 @@ try:
                                    night_scale=settings.night_scale,
                                    day_length=settings.day_length_s)
 
-    # Iterate to capture one frame
-    for i in range(num_frames):
-        # Pause the simulation
+    # If the capture frequency is forced
+    if settings.force_capture_freq_hz:
+        # Pause the simulation to control the simulation time
         simulation_mgr.pause_simulation(bng)
-        # Advance the simulation by the corresponding number of seconds
-        simulation_mgr.step_simulation_seconds(bng, capture_period_s)
-        try:
-            # Resume the simulation
-            bng.resume()
-        except ConnectionResetError:
-            # Unable to reconnect with simulation
-            logging_msg = 'Connection to simulator reset. Stopping script.'
-            logging_mgr.log_error(logging_msg)
-            break
+
+    # Initialize the last capture time value to zero
+    last_capture_time = 0.0
+
+    # Iterate to capture one frame
+    for cur_frame_num in range(num_frames):
+        # Use the 'ego' vehicle metadata to check the current simulation time
+        current_sim_time = data_capture_mgr.extract_vehicle_metadata(ego)['time']
+
+        # If capture frequency is forced
+        if settings.force_capture_freq_hz:
+            # Advance the simulation by the corresponding number of seconds for the capture period
+            simulation_mgr.step_simulation_seconds(bng, capture_period_s)
+        # If capture frequency is not forced
+        else:
+            # Wait until it's time to capture the next frame
+            logging_mgr.log_action(f'Current simulation time: {current_sim_time}')
+
+            # Wait until the current simulation time is greater than the last capture time plus the capture period
+            if current_sim_time < last_capture_time + capture_period_s:
+                # Calculate the time to sleep until the next frame
+                sleep_time = last_capture_time + capture_period_s - current_sim_time
+                time.sleep(sleep_time)
+            else:
+                # If current frame isn't the first one, log a warning that the capture frequency is too high
+                if cur_frame_num > 0:
+                    logging_mgr.log_warning(f'''Capture frequency too high for frame {cur_frame_num}. Previous capture took {current_sim_time - last_capture_time} seconds. Capture period is {capture_period_s} seconds.''')     
+
+        # Update the last capture time to the current simulation time
+        last_capture_time = current_sim_time
 
         # Check time of day
         time_of_day = simulation_mgr.get_time_of_day(bng)
@@ -135,7 +156,7 @@ try:
             headlights_on = False
 
         # Create a directory for the frame output
-        frame_dir = utils.create_frame_output_dir(output_dir, i)
+        frame_dir = utils.create_frame_output_dir(output_dir, cur_frame_num)
 
         # For each camera sensor, save the data
         for camera_sensor in camera_list:
@@ -152,7 +173,8 @@ try:
         frame_metadata_dict = utils.combine_dict(frame_metadata_list)
 
         data_capture_mgr.save_metadata(frame_metadata_dict, frame_dir)
-        simulation_mgr.display_message(bng, f'Frame {i} captured.')
+        simulation_mgr.display_message(bng, f'Frame {cur_frame_num} captured.')
+
 except KeyboardInterrupt:
     # User stopped the simulation process
     logging_mgr.log_action('Simulation stopped by user.')
