@@ -106,11 +106,20 @@ try:
                                    day_scale=settings.day_scale,
                                    night_scale=settings.night_scale,
                                    day_length=settings.day_length_s)
+    
+    # Skip initial seconds to allow the simulation to stabilize
+    simulation_mgr.pause_simulation(bng)
+    simulation_mgr.step_simulation_seconds(bng, settings.default_start_delay_s)
 
-    # If the capture frequency is forced
-    if settings.force_capture_freq_hz:
-        # Pause the simulation to control the simulation time
-        simulation_mgr.pause_simulation(bng)
+    # Check if the capture frequency should be forced
+    force_capture_freq_hz = settings.force_capture_freq_hz
+    # If capture frequency is lower than the minimum non-force capture frequency value, force it
+    if capture_freq_hz < settings.min_non_force_capture_freq_hz:
+        force_capture_freq_hz = True
+    
+    # If the capture frequency is not forced, resume simulation
+    if not force_capture_freq_hz:
+        simulation_mgr.resume_simulation(bng)
 
     # Initialize the last capture time value to zero
     last_capture_time = 0.0
@@ -118,10 +127,10 @@ try:
     # Iterate to capture one frame
     for cur_frame_num in range(num_frames):
         # Use the 'ego' vehicle metadata to check the current simulation time
-        current_sim_time = data_capture_mgr.extract_vehicle_metadata(ego)['time']
+        current_sim_time = data_capture_mgr.extract_vehicle_simulation_time(ego)
 
         # If capture frequency is forced
-        if settings.force_capture_freq_hz:
+        if force_capture_freq_hz:
             # Advance the simulation by the corresponding number of seconds for the capture period
             simulation_mgr.step_simulation_seconds(bng, capture_period_s)
         # If capture frequency is not forced
@@ -129,15 +138,19 @@ try:
             # Wait until it's time to capture the next frame
             logging_mgr.log_action(f'Current simulation time: {current_sim_time}')
 
-            # Wait until the current simulation time is greater than the last capture time plus the capture period
-            if current_sim_time < last_capture_time + capture_period_s:
-                # Calculate the time to sleep until the next frame
-                sleep_time = last_capture_time + capture_period_s - current_sim_time
-                time.sleep(sleep_time)
-            else:
-                # If current frame isn't the first one, log a warning that the capture frequency is too high
-                if cur_frame_num > 0:
-                    logging_mgr.log_warning(f'''Capture frequency too high for frame {cur_frame_num}. Previous capture took {current_sim_time - last_capture_time} seconds. Capture period is {capture_period_s} seconds.''')     
+            # If it's the first frame, don't check the capture frequency
+            if cur_frame_num > 0:
+                # Check if the capture period has already passed since the last capture
+                if current_sim_time > last_capture_time + capture_period_s:
+                    # Log a warning that the capture frequency is too high
+                    logging_mgr.log_warning(f'''Capture frequency too high for frame {cur_frame_num}. Previous capture took {current_sim_time - last_capture_time} seconds. Capture period is {capture_period_s} seconds.''')
+                else:
+                    # If the capture period hasn't passed yet, wait until it does
+                    while current_sim_time < last_capture_time + capture_period_s:
+                        # Wait for a short time before checking the simulation time again
+                        time.sleep(settings.wait_for_frame_sleep_time_s)
+                        # Update the current simulation time
+                        current_sim_time = data_capture_mgr.extract_vehicle_simulation_time(ego)
 
         # Update the last capture time to the current simulation time
         last_capture_time = current_sim_time

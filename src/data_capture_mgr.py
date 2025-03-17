@@ -87,6 +87,21 @@ def extract_vehicle_metadata(vehicle: Vehicle) -> StrDict:
 
     return metadata
 
+def extract_vehicle_simulation_time(vehicle: Vehicle) -> float:
+    # Poll the vehicle sensors
+    vehicle.sensors.poll()
+    logging_mgr.log_action(f'Vehicle "{vehicle.vid}" sensors polled.')
+
+    # Extract state data from the vehicle
+    state_data = vehicle.sensors['state']
+    logging_mgr.log_action(f'Vehicle "{vehicle.vid}" state data extracted.')
+
+    # Extract simulation time from the vehicle
+    simulation_time = state_data['time']
+    logging_mgr.log_action(f'Vehicle "{vehicle.vid}" simulation time extracted: {simulation_time} seconds.')
+
+    return simulation_time
+
 def extract_time_of_day_metadata(bng: BeamNGpy) -> StrDict:
     '''Extract time of day metadata from the simulator.'''
     time_of_day = simulation_mgr.get_time_of_day(bng)
