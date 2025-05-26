@@ -10,7 +10,7 @@ beamng_host: str = 'localhost'
 beamng_port: int = 25252
 random_seed: int = utils.get_time() # Can be set to a specific value for reproducibility
 simulation_steps_per_second: int = 60
-force_capture_freq_hz: bool = False
+force_capture_freq_hz: bool = True
 min_non_force_capture_freq_hz: float = 2
 wait_for_frame_sleep_time_s: float = 0.01
 

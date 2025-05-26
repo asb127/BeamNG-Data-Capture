@@ -27,7 +27,7 @@ scenario_mgr.get_weather_presets()
 bng = simulation_mgr.launch_beamng()
 
 # Set simulation steps per second
-simulation_mgr.set_simulation_steps_per_second(bng, settings.simulation_steps_per_second)
+simulation_mgr.set_deterministic_steps_per_second(bng, settings.simulation_steps_per_second)
 
 # Create a scenario and vehicle for the capture session using the session configuration
 scenario, ego = scenario_mgr.create_scenario(bng, session)

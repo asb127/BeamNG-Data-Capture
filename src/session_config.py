@@ -27,7 +27,7 @@ class SessionConfig:
                  vehicle: VehicleConfig = VehicleConfig(),
                  cameras: List[CameraSensorConfig] = [CameraSensorConfig()],
                  weather: str = settings.default_weather,
-                 num_ai_traffic_vehicles: int = 10,
+                 num_ai_traffic_vehicles: int = settings.default_num_ai_traffic_vehicles,
                  starting_waypoint: str = ''):
         '''
         Initialize a new session configuration with the provided parameters.
