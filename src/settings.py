@@ -86,3 +86,9 @@ default_camera_render_flags: Dict[str, bool] = {
 default_camera_position: Float3 = (0, -0.5, 1.5)
 default_camera_fov_y: int = 70
 default_camera_near_far_planes: tuple = (0.1, 1000.0)
+
+# IMU
+# - Here are defined the IMU settings used by the application
+default_imu_position: Float3 = (0, 0, 0.5)
+default_accel_window_width: float = 50.0
+default_gyro_window_width: float = 50.0

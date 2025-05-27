@@ -2,7 +2,7 @@ from beamngpy.sensors import Camera, AdvancedIMU
 from beamngpy import BeamNGpy
 from beamngpy.vehicle import Vehicle
 
-import logging_mgr, simulation_mgr, utils
+import logging_mgr, settings, simulation_mgr, utils
 from camera_sensor_config import CameraSensorConfig
 from beamngpy.types import StrDict
 
@@ -29,6 +29,9 @@ def create_imu_sensor(bng: BeamNGpy,
     sensor_imu = AdvancedIMU(name=name,
                              bng=bng,
                              vehicle=vehicle,
+                             pos=settings.default_imu_position,
+                             accel_window_width=settings.default_accel_window_width,
+                             gyro_window_width=settings.default_gyro_window_width,
                              is_send_immediately=True)
     return sensor_imu
 
