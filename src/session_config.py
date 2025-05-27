@@ -12,6 +12,7 @@ class SessionConfigDict(TypedDict):
     vehicle: VehicleConfig
     cameras: List[CameraSensorConfig]
     weather: str
+    time: str
     num_ai_traffic_vehicles: int
     starting_waypoint: str
 
@@ -27,6 +28,7 @@ class SessionConfig:
                  vehicle: VehicleConfig = VehicleConfig(),
                  cameras: List[CameraSensorConfig] = [CameraSensorConfig()],
                  weather: str = settings.default_weather,
+                 time: str = settings.time_of_day_start,
                  num_ai_traffic_vehicles: int = settings.default_num_ai_traffic_vehicles,
                  starting_waypoint: str = ''):
         '''
@@ -39,6 +41,7 @@ class SessionConfig:
         self._vehicle = vehicle
         self._cameras = cameras
         self._weather = weather
+        self._time = time
         self._num_ai_traffic_vehicles = num_ai_traffic_vehicles
         self._starting_waypoint = starting_waypoint
 
@@ -117,6 +120,18 @@ class SessionConfig:
         self._weather = weather
 
     @property
+    def time(self) -> str:
+        '''Get the starting time of day for the capture session.'''
+        return self._time
+
+    @time.setter
+    def time(self, time: str) -> None:
+        '''Set the starting time of day for the capture session.'''
+        if not utils.is_hhmmss_time_string(time):
+            raise ValueError('Time of day must be specified in the "HH:mm:ss" format.')
+        self._time = time
+
+    @property
     def num_ai_traffic_vehicles(self) -> int:
         '''Get the number of AI traffic vehicles for the capture session.'''
         return self._num_ai_traffic_vehicles
@@ -148,6 +163,7 @@ class SessionConfig:
             'vehicle': self._vehicle.to_dict(),
             'cameras': [camera.to_dict() for camera in self._cameras],
             'weather': self._weather,
+            'time': self._time,
             'num_ai_traffic_vehicles': self._num_ai_traffic_vehicles,
             'starting_waypoint': self._starting_waypoint
         }
@@ -163,6 +179,7 @@ class SessionConfig:
         self._vehicle.from_dict(config_dict['vehicle'])
         self._cameras = [CameraSensorConfig().from_dict(camera) for camera in config_dict['cameras']]
         self._weather = config_dict['weather']
+        self._time = config_dict['time']
         self._num_ai_traffic_vehicles = config_dict['num_ai_traffic_vehicles']
         self._starting_waypoint = config_dict['starting_waypoint']
 
@@ -177,6 +194,7 @@ class SessionConfig:
             'capture_freq_hz': self.capture_freq_hz,
             'cameras': [camera.extract_camera_metadata() for camera in self.cameras],
             'weather': self.weather,
+            'time': self.time,
             'num_ai_traffic_vehicles': self.num_ai_traffic_vehicles
         }
         return metadata

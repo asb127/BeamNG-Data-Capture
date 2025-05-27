@@ -103,6 +103,7 @@ try:
 
     # Set the time of day settings for the session
     simulation_mgr.set_time_of_day(bng,
+                                   time_of_day=session.time,
                                    play=settings.play_time,
                                    day_scale=settings.day_scale,
                                    night_scale=settings.night_scale,

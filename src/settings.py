@@ -38,6 +38,7 @@ play_time: bool = True
 day_scale: float = 1.0
 night_scale: float = 1.0
 day_length_s: float = 600
+time_of_day_start: str = '12:00:00'
 
 # Vehicles
 # - Here are defined the vehicle settings used by the application

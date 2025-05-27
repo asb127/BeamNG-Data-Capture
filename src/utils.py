@@ -8,9 +8,15 @@ def get_time() -> int:
     # Return the current time as an integer
     return int(datetime.now().timestamp())
 
+def is_hhmmss_time_string(time_str: str) -> bool:
+    '''
+    Check if the string is in BeamNG time format.
+    '''
+    return bool(re.match(r'^\d{2}:\d{2}:\d{2}$', time_str))
+
 def beamng_time_to_hhmmss(time: float) -> str:
     '''
-    Convert BeamNG time [0,1] to HH:MM:SS format
+    Convert BeamNG time [0,1] to HH:mm:ss format
     
     Note: Both 0 and 1 in BeamNG time are 12:00:00
     '''
@@ -24,20 +30,20 @@ def beamng_time_to_hhmmss(time: float) -> str:
     hours = seconds // 3600
     minutes = (seconds % 3600) // 60
     seconds = seconds % 60
-    # Return the time as a string in HH:MM:SS format
+    # Return the time as a string in HH:mm:ss format
     return f'{hours:02}:{minutes:02}:{seconds:02}'
 
 def hhmmss_to_beamng_time(time: str) -> float:
     '''
-    Convert HH:MM:SS format to BeamNG time [0,1]
+    Convert HH:mm:ss format to BeamNG time [0,1]
     
     Note: Both 0 and 1 in BeamNG time are 12:00:00
     '''
     return_time = 0.0
-    # Check the format of the time string
-    if not re.match(r'^\d{2}:\d{2}:\d{2}$', time):
+    # Use the new utility function to check the format
+    if not is_hhmmss_time_string(time):
         # Log an error if the time format is invalid and return 0
-        logging_mgr.log_error('Invalid time format. Must be in HH:MM:SS format.')
+        logging_mgr.log_error('Invalid time format. Must be in HH:mm:ss format.')
     else:
         # Split the time string into hours, minutes, and seconds
         hours, minutes, seconds = map(int, time.split(':'))
