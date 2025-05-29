@@ -17,6 +17,7 @@ def create_camera_sensor(bng: BeamNGpy,
                            pos=camera.position,
                            resolution=camera.resolution,
                            field_of_view_y=camera.fov_y,
+                           near_far_planes=camera.near_far_planes,
                            is_render_colours=camera.is_render_colours,
                            is_render_annotations=camera.is_render_annotations,
                            is_render_depth=camera.is_render_depth)
@@ -122,20 +123,8 @@ def extract_vehicle_metadata(vehicle: Vehicle) -> StrDict:
 
     return metadata
 
-def extract_vehicle_simulation_time(vehicle: Vehicle) -> float:
-    # Poll the vehicle sensors
-    vehicle.sensors.poll()
-    logging_mgr.log_action(f'Vehicle "{vehicle.vid}" sensors polled.')
-
-    # Extract state data from the vehicle
-    state_data = vehicle.sensors['state']
-    logging_mgr.log_action(f'Vehicle "{vehicle.vid}" state data extracted.')
-
-    # Extract simulation time from the vehicle
-    simulation_time = state_data['time']
-    logging_mgr.log_action(f'Vehicle "{vehicle.vid}" simulation time extracted: {simulation_time} seconds.')
-
-    return simulation_time
+def extract_vehicle_simulation_time_from_metadata(vehicle_metadata) -> float:
+    return vehicle_metadata['time']
 
 def extract_time_of_day_metadata(bng: BeamNGpy) -> StrDict:
     '''Extract time of day metadata from the simulator.'''

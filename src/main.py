@@ -124,22 +124,14 @@ try:
 
     # Iterate to capture one frame
     for cur_frame_num in range(num_frames):
-        # Use the 'ego' vehicle metadata to check the current simulation time
-        current_sim_time_s = data_capture_mgr.extract_vehicle_simulation_time(ego)
-
-        # Update the last capture time to the current simulation time
-        last_capture_time_s = current_sim_time_s
-
         # Check time of day
         time_of_day = simulation_mgr.get_time_of_day(bng)
         # If it's night, turn on the headlights
-        if ((time_of_day['time'] < night_time_end or time_of_day['time'] > night_time_start)
-                and not headlights_on):
+        if not (night_time_end <= time_of_day['time'] < night_time_start) and not headlights_on:
             vehicle_mgr.set_headlights(ego, settings.headlights_intensity)
             headlights_on = True
         # If it's day, turn off the headlights
-        elif (time_of_day['time'] >= night_time_end and time_of_day['time'] <= night_time_start
-                and headlights_on):
+        elif (night_time_end <= time_of_day['time'] < night_time_start) and headlights_on:
             vehicle_mgr.set_headlights(ego, 0)
             headlights_on = False
 
@@ -150,14 +142,21 @@ try:
         data_capture_mgr.save_all_camera_image_data(camera_list, frame_dir)
 
         # Extract, combine and save the metadata to the frame directory
+        vehicle_metadata = data_capture_mgr.extract_vehicle_metadata(ego)
         frame_metadata_list = []
         frame_metadata_list.append(data_capture_mgr.extract_time_of_day_metadata(bng))
-        frame_metadata_list.append(data_capture_mgr.extract_vehicle_metadata(ego))
+        frame_metadata_list.append(vehicle_metadata)
         frame_metadata_list.append(data_capture_mgr.extract_imu_data(sensor_imu))
         frame_metadata_dict = utils.combine_dict(frame_metadata_list)
 
         data_capture_mgr.save_metadata(frame_metadata_dict, frame_dir)
         simulation_mgr.display_message(bng, f'Frame {cur_frame_num} captured.')
+
+        # Use the 'ego' vehicle metadata to check the current simulation time
+        current_sim_time_s = data_capture_mgr.extract_vehicle_simulation_time_from_metadata(vehicle_metadata)
+
+        # Update the last capture time to the current simulation time
+        last_capture_time_s = current_sim_time_s
         
         # If not on the last captured frame, advance time by the capture period
         if cur_frame_num < (num_frames - 1):
@@ -168,25 +167,27 @@ try:
             else:
                 # If capture frequency is not forced
                 # Wait until it's time to capture the next frame
-                logging_mgr.log_action(f'Current simulation time: {current_sim_time_s}')
 
-                # If it's the first frame, don't check the capture frequency
-                if cur_frame_num > 0:
-                    # Check if the capture period has already passed since the last capture
-                    last_frame_period_s = current_sim_time_s - last_capture_time_s
-                    if last_frame_period_s > capture_period_s:
-                        # Log a warning that the capture frequency is too high
-                        logging_mgr.log_warning(f'''Capture frequency too high for frame {cur_frame_num}.
-                                                \nPrevious capture took {last_frame_period_s} seconds.
-                                                \nCapture period is {capture_period_s} seconds.''')
-                    else:
-                        # If the capture period hasn't passed yet, wait until it does
-                        while last_frame_period_s > capture_period_s:
-                            # Wait for a short time before checking the simulation time again
-                            time.sleep(settings.wait_for_frame_sleep_time_s)
-                            # Update the current simulation time
-                            current_sim_time_s = data_capture_mgr.extract_vehicle_simulation_time(ego)
-                            last_frame_period_s = current_sim_time_s - last_capture_time_s
+                # Update the current simulation time and last frame period
+                current_sim_time_s = data_capture_mgr.extract_vehicle_simulation_time_from_metadata(vehicle_metadata)
+                last_frame_period_s = current_sim_time_s - last_capture_time_s
+                logging_mgr.log_action(f'Current simulation time: {current_sim_time_s} s, last frame period: {last_frame_period_s} s.')
+
+                if last_frame_period_s > capture_period_s:
+                    # Log a warning that the capture frequency is too high
+                    logging_mgr.log_warning(f'''Capture frequency too high for frame {cur_frame_num}.
+                                            \nPrevious capture took {last_frame_period_s} seconds.
+                                            \nCapture period is {capture_period_s} seconds.''')
+                else:
+                    # If the capture period hasn't passed yet, wait until it does
+                    while last_frame_period_s < capture_period_s:
+                        # Wait for a short time before checking the simulation time again
+                        time.sleep(settings.wait_for_frame_sleep_time_s)
+                        # Update the vehicle metadata
+                        vehicle_metadata = data_capture_mgr.extract_vehicle_metadata(ego)
+                        # Update the current simulation time and last frame period
+                        current_sim_time_s = data_capture_mgr.extract_vehicle_simulation_time_from_metadata(vehicle_metadata)
+                        last_frame_period_s = current_sim_time_s - last_capture_time_s
 
 except KeyboardInterrupt:
     # User stopped the simulation process
