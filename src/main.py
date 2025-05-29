@@ -146,12 +146,8 @@ try:
         # Create a directory for the frame output
         frame_dir = utils.create_frame_output_dir(output_dir, cur_frame_num)
 
-        # For each camera sensor, save the data
-        for camera_sensor in camera_list:
-            # Create a directory for the camera sensor inside the frame directory
-            camera_dir = utils.create_dir(frame_dir, camera_sensor.name)
-            # Save the camera sensor data into the camera directory
-            data_capture_mgr.save_camera_image_data(camera_sensor, camera_dir)
+        # Extract and save the data from all camera sensors
+        data_capture_mgr.save_all_camera_image_data(camera_list, frame_dir)
 
         # Extract, combine and save the metadata to the frame directory
         frame_metadata_list = []

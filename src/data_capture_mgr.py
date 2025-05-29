@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from beamngpy.sensors import Camera, AdvancedIMU
 from beamngpy import BeamNGpy
 from beamngpy.vehicle import Vehicle
@@ -40,19 +41,50 @@ def save_camera_image_data(camera: Camera, output_dir: str) -> None:
     sensor_data = camera.poll()
     logging_mgr.log_action(f'Camera "{camera.name}" data polled.')
 
-    # Split the sensor data
-    color_image = sensor_data['colour']
+    # Split the sensor data and remove alpha channel from color image
+    color_image = sensor_data['colour'].convert('RGB')
     depth_image = sensor_data['depth']
     semantic_image = sensor_data['annotation']
 
-    # Remove alpha channel from color image
-    color_image = color_image.convert('RGB')
+    # Define a helper function to save images
+    def save_image(image, path):
+        image.save(path)
 
-    # Save the images to the output directory
-    color_image.save(utils.join_paths(output_dir, 'color.png'))
-    depth_image.save(utils.join_paths(output_dir, 'depth.png'))
-    semantic_image.save(utils.join_paths(output_dir, 'semantic.png'))
+    # Prepare file paths
+    color_path = utils.join_paths(output_dir, 'color.png')
+    depth_path = utils.join_paths(output_dir, 'depth.png')
+    semantic_path = utils.join_paths(output_dir, 'semantic.png')
+
+    # Save the images to the output directory in parallel
+    with ThreadPoolExecutor() as executor:
+        futures = [
+            executor.submit(save_image, color_image, color_path),
+            executor.submit(save_image, depth_image, depth_path),
+            executor.submit(save_image, semantic_image, semantic_path)
+        ]
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                logging_mgr.log_error(f'Error saving image for camera {camera.name}: {e}')
+
     logging_mgr.log_action(f'Camera "{camera.name}" data saved in "{output_dir}".')
+
+def save_all_camera_image_data(camera_list, frame_dir):
+    '''
+    Extract and save all camera image data in parallel from a list of camera sensors.
+    '''
+    with ThreadPoolExecutor() as executor:
+        futures = []
+        for camera_sensor in camera_list:
+            camera_dir = utils.create_dir(frame_dir, camera_sensor.name)
+            futures.append(executor.submit(save_camera_image_data, camera_sensor, camera_dir))
+        # Optionally wait for all to finish (can be omitted if you want true async)
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                logging_mgr.log_error(f'Error saving camera data: {e}')
 
 def extract_imu_data(imu: AdvancedIMU) -> StrDict:
     # Extract data from the IMU sensor into a dictionary
