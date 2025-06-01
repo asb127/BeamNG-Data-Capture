@@ -108,9 +108,13 @@ try:
                                    day_scale=settings.day_scale,
                                    night_scale=settings.night_scale,
                                    day_length=settings.day_length_s)
-    
+
+    # Initialize minimum start delay
+    start_delay_s = 1
+    if (settings.default_start_delay_s > start_delay_s):
+        start_delay_s = settings.default_start_delay_s
     # Skip initial seconds to allow the simulation to stabilize
-    simulation_mgr.step_simulation_seconds(bng, settings.default_start_delay_s)
+    simulation_mgr.step_simulation_seconds(bng, start_delay_s)
 
     # Check if the capture frequency should be forced
     force_capture_freq_hz = settings.force_capture_freq_hz

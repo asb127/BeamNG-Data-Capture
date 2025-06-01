@@ -28,8 +28,11 @@ def resume_simulation(bng: BeamNGpy) -> None:
     bng.resume()
 
 def step_simulation_steps(bng: BeamNGpy, steps: int) -> None:
-    # Advance the simulation by the given number of steps
-    bng.step(steps)
+    # Advance the simulation by the given number of steps (if larger than 0)
+    if (steps > 0):
+        bng.step(steps)
+    else:
+        logging_mgr.log_warning(f'Requested steps ignored, value must be higher than zero. Value requested: {steps}.')
 
 def step_simulation_seconds(bng: BeamNGpy, seconds: int) -> None:
     # Advance the simulation the corresponding number of steps for the given number of seconds
