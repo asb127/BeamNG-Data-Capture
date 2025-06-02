@@ -130,12 +130,13 @@ try:
     for cur_frame_num in range(num_frames):
         # Check time of day
         time_of_day = simulation_mgr.get_time_of_day(bng)
+        is_night_time = night_time_start <= time_of_day['time'] < night_time_end
         # If it's night, turn on the headlights
-        if not (night_time_end <= time_of_day['time'] < night_time_start) and not headlights_on:
+        if is_night_time and not headlights_on:
             vehicle_mgr.set_headlights(ego, settings.headlights_intensity)
             headlights_on = True
         # If it's day, turn off the headlights
-        elif (night_time_end <= time_of_day['time'] < night_time_start) and headlights_on:
+        elif not is_night_time and headlights_on:
             vehicle_mgr.set_headlights(ego, 0)
             headlights_on = False
 
