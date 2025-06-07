@@ -2,23 +2,27 @@ import json, os, random, re, zipfile
 from datetime import datetime
 from typing import List
 
-import logging_mgr
+import gui_mgr, logging_mgr
 
+# --- Time/Date Utilities ---
 def get_time() -> int:
-    # Return the current time as an integer
+    '''
+    Return the current time as an integer POSIX timestamp.
+    '''
     return int(datetime.now().timestamp())
 
 def is_hhmmss_time_string(time_str: str) -> bool:
     '''
-    Check if the string is in BeamNG time format.
+    Check if the string is in BeamNG time format (HH:mm:ss).
     '''
-    return bool(re.match(r'^\d{2}:\d{2}:\d{2}$', time_str))
+    # Regex: HH:mm:ss where HH is 00-23 and both mm and ss are 00-59
+    pattern = r'^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$'
+    return bool(re.match(pattern, time_str))
 
 def beamng_time_to_hhmmss(time: float) -> str:
     '''
-    Convert BeamNG time [0,1] to HH:mm:ss format
-    
-    Note: Both 0 and 1 in BeamNG time are 12:00:00
+    Convert BeamNG time [0,1] to HH:mm:ss format.
+    Note: Both 0 and 1 in BeamNG time are 12:00:00.
     '''
     # Convert BeamNG time to seconds (1 day = 86400 seconds)
     seconds = time * 86400
@@ -35,9 +39,8 @@ def beamng_time_to_hhmmss(time: float) -> str:
 
 def hhmmss_to_beamng_time(time: str) -> float:
     '''
-    Convert HH:mm:ss format to BeamNG time [0,1]
-    
-    Note: Both 0 and 1 in BeamNG time are 12:00:00
+    Convert HH:mm:ss format to BeamNG time [0,1].
+    Note: Both 0 and 1 in BeamNG time are 12:00:00.
     '''
     return_time = 0.0
     # Use the new utility function to check the format
@@ -58,21 +61,69 @@ def hhmmss_to_beamng_time(time: str) -> float:
     # Return the time in BeamNG format
     return return_time
 
+# --- Path/File Utilities ---
+def return_documents_path() -> str:
+    '''
+    Return the path to the user's "Documents" folder.
+    '''
+    return os.path.expanduser('~/Documents')
+
+def join_paths(*args) -> str:
+    '''
+    Join non-empty string arguments into a single path.
+    '''
+    accepted_args = accept_string_args(*args)
+    return os.path.join(*accepted_args)
+
+def create_dir(path: str, name: str) -> str:
+    '''
+    Create a directory with the given name at the specified path.
+    Return the full path to the created directory.
+    '''
+    dir_path = os.path.join(path, name)
+    os.makedirs(dir_path, exist_ok=True)
+    logging_mgr.log_action(f'Directory created at "{dir_path}".')
+    return dir_path
+
+def create_output_dir(root_dir: str) -> str:
+    '''
+    Create a directory to store the captured images.
+    The directory is named with the current timestamp.
+    '''
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    return create_dir(root_dir, os.path.join('BeamNG-Data-Capture', timestamp))
+
+def create_frame_output_dir(output_dir: str, i: int) -> str:
+    '''
+    Create a subfolder for every frame inside the output directory.
+    '''
+    return create_dir(output_dir, f'frame_{i}')
+
+# --- Random Utilities ---
 def set_random_seed(seed: int) -> None:
-    # Set the random seed for reproducibility
+    '''
+    Set the random seed for reproducibility.
+    '''
     random.seed(seed)
     logging_mgr.log_action(f'Random seed set to {seed}.')
 
 def get_random_float(min_value: float, max_value: float) -> float:
-    # Generate a random float between the specified minimum and maximum values
+    '''
+    Generate a random float between the specified minimum and maximum values.
+    '''
     return random.uniform(min_value, max_value)
 
 def select_random_item(items: List) -> object:
-    # Select a random item from the provided list
+    '''
+    Select a random item from the provided list.
+    '''
     return random.choice(items)
 
+# --- Data Structure Utilities ---
 def accept_string_args(*args) -> List[str]:
-    # Only accept non-empty string arguments
+    '''
+    Only accept non-empty string arguments from the provided arguments.
+    '''
     accepted_args: List[str] = []
     for arg in args:
         if not isinstance(arg, str):
@@ -83,33 +134,10 @@ def accept_string_args(*args) -> List[str]:
             accepted_args.append(arg)
     return accepted_args
 
-def return_documents_path() -> str:
-    # Return the path to the user's "Documents" folder
-    return os.path.expanduser('~/Documents')
-
-def join_paths(*args) -> str:
-    # Join non-empty string arguments into a single path
-    accepted_args = accept_string_args(*args)
-    return os.path.join(*accepted_args)
-
-def create_dir(path: str, name: str) -> str:
-    # Create a directory with the given name at the specified path
-    dir_path = os.path.join(path, name)
-    os.makedirs(dir_path, exist_ok=True)
-    logging_mgr.log_action(f'Directory created at "{dir_path}".')
-    return dir_path
-
-def create_output_dir(root_dir: str) -> str:
-    # Create a directory to store the captured images
-    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    return create_dir(root_dir, os.path.join('BeamNG-Data-Capture', timestamp))
-
-def create_frame_output_dir(output_dir: str, i: int) -> str:
-    # Create a subfolder for every frame
-    return create_dir(output_dir, f'frame_{i}')
-
 def combine_dict(metadata_array: List[dict]) -> dict:
-    # Combine all metadata into a single dictionary
+    '''
+    Combine all metadata dictionaries in the list into a single dictionary.
+    '''
     combined_metadata = {}
     for metadata in metadata_array:
         combined_metadata.update(metadata)
@@ -117,7 +145,9 @@ def combine_dict(metadata_array: List[dict]) -> dict:
     return combined_metadata
 
 def create_parent_dict(keys: List[str], values: List[dict]) -> dict:
-    # Create a dictionary with the provided strings as keys and dictionaries as values
+    '''
+    Create a dictionary with the provided strings as keys and dictionaries as values.
+    '''
     output_dict = dict()
     if len(keys) != len(values):
         logging_mgr.log_error('Could not create parent dictionary: keys and values lists must have the same length.')
@@ -127,7 +157,9 @@ def create_parent_dict(keys: List[str], values: List[dict]) -> dict:
     return output_dict
 
 def create_child_dict(parent_dict:dict, key: str) -> dict:
-    # Create a child dictionary with the provided key from the parent dictionary
+    '''
+    Create a child dictionary with the provided key from the parent dictionary.
+    '''
     child_dict = parent_dict.get(key, dict())
     # If the key does not exist, log a warning
     if not child_dict:
@@ -136,17 +168,26 @@ def create_child_dict(parent_dict:dict, key: str) -> dict:
         logging_mgr.log_action(f'Child dictionary created with key "{key}".')
     return child_dict
 
+# --- JSON/ZIP Utilities ---
 def save_json_file(data: dict, output_dir: str, filename: str) -> None:
-    # Save the provided data as a JSON file in the output directory
+    '''
+    Save the provided data as a JSON file in the output directory.
+    '''
     with open(os.path.join(output_dir, filename), 'w') as file:
         json.dump(data, file, indent=4)
     logging_mgr.log_action(f'JSON file "{filename}" saved in "{output_dir}".')
 
 def is_path_inside_zip(path: str) -> bool:
-    # Check if the provided path is contained within a ZIP file
+    '''
+    Check if the provided path is contained within a ZIP file.
+    '''
     return '.zip/' in path
 
 def load_json_file(file_path: str) -> dict:
+    '''
+    Load a JSON file from the provided path.
+    If the path is inside a ZIP file, extract and load it.
+    '''
     # Check if the provided path is inside a ZIP file
     if is_path_inside_zip(file_path):
         # Split the path into the ZIP file and the file inside it
@@ -166,22 +207,28 @@ def load_json_file(file_path: str) -> dict:
     return data
 
 def open_zip_file(file_path: str) -> zipfile.ZipFile:
-    # Open the provided ZIP file
+    '''
+    Open the provided ZIP file and return the ZipFile object.
+    '''
     zip_file = zipfile.ZipFile(file_path, 'r')
     logging_mgr.log_action(f'ZIP file "{file_path}" opened.')
     return zip_file
 
 def read_file_inside_zip(zip_file: zipfile.ZipFile, file_path: str) -> str:
-    # Read the provided file inside the ZIP file
+    '''
+    Read the provided file inside the ZIP file and return its contents as bytes.
+    '''
     with zip_file.open(file_path) as file:
         data = file.read()
     logging_mgr.log_action(f'File "{file_path}" read inside ZIP file.')
     return data
 
 def read_json_file_inside_zip(zip_file: zipfile.ZipFile, file_path: str) -> dict:
-    # Read the provided JSON file inside the ZIP file
+    '''
+    Read the provided JSON file inside the ZIP file and return its contents as a dictionary.
+    '''
     data = read_file_inside_zip(zip_file, file_path)
     # Decode the data into a dictionary
-    dictionary = json.loads(data)
+    dictionary = json.loads(data.decode('utf-8'))
     logging_mgr.log_action(f'JSON file "{file_path}" read inside ZIP file.')
     return dictionary
