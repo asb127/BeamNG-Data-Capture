@@ -2,7 +2,7 @@ from typing import List, Tuple
 from beamngpy import BeamNGpy, Scenario, Vehicle
 from beamngpy.scenario.scenario_object import ScenarioObject
 
-import logging_mgr, settings, simulation_mgr, vehicle_mgr, utils
+import logging_mgr, simulation_mgr, vehicle_mgr, utils
 from session_config import SessionConfig
 
 # Global variable to store the available weather presets
@@ -110,6 +110,7 @@ def initialize_scenario(bng: BeamNGpy,
 def get_weather_presets() -> None:
     '''Load the available weather presets from the settings file into the global variable "weather_presets".'''
     global weather_presets
+    import settings
     # Load the weather presets from the path specified in the settings
     weather_presets = utils.load_json_file(settings.weather_presets_path).keys()
     # Log a warning if no weather presets are found

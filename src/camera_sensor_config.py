@@ -1,6 +1,5 @@
 from typing import TypedDict
 
-import settings
 from beamngpy.types import Float3, Int2, StrDict
 
 class CameraSensorConfigDict(TypedDict):
@@ -18,25 +17,26 @@ class CameraSensorConfig:
     Configuration class for a camera sensor.
     '''
     def __init__(self,
-                 name: str = settings.default_camera_name,
-                 position: Float3 = settings.default_camera_position,
-                 resolution: Int2 = settings.default_camera_resolution,
-                 is_render_colours: bool = settings.default_camera_render_flags['colour'],
-                 is_render_annotations: bool = settings.default_camera_render_flags['annotation'],
-                 is_render_depth: bool = settings.default_camera_render_flags['depth'],
-                 fov_y: int = settings.default_camera_fov_y,
-                 near_far_planes: tuple = settings.default_camera_near_far_planes):
+                 name: str = None,
+                 position: Float3 = None,
+                 resolution: Int2 = None,
+                 is_render_colours: bool = None,
+                 is_render_annotations: bool = None,
+                 is_render_depth: bool = None,
+                 fov_y: int = None,
+                 near_far_planes: tuple = None):
         '''
         Initialize a new camera sensor configuration with the provided parameters.
         '''
-        self._name = name
-        self._position = position
-        self._resolution = resolution
-        self._is_render_colours = is_render_colours
-        self._is_render_annotations = is_render_annotations
-        self._is_render_depth = is_render_depth
-        self._fov_y = fov_y
-        self._near_far_planes = near_far_planes
+        import settings
+        self._name = name if name is not None else settings.default_camera_name
+        self._position = position if position is not None else settings.default_camera_position
+        self._resolution = resolution if resolution is not None else settings.default_camera_resolution
+        self._is_render_colours = is_render_colours if is_render_colours is not None else settings.default_camera_render_flags['colour']
+        self._is_render_annotations = is_render_annotations if is_render_annotations is not None else settings.default_camera_render_flags['annotation']
+        self._is_render_depth = is_render_depth if is_render_depth is not None else settings.default_camera_render_flags['depth']
+        self._fov_y = fov_y if fov_y is not None else settings.default_camera_fov_y
+        self._near_far_planes = near_far_planes if near_far_planes is not None else settings.default_camera_near_far_planes
 
     @property
     def name(self) -> str:

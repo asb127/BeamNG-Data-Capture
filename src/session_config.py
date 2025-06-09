@@ -1,6 +1,6 @@
 from typing import TypedDict, List
 
-import logging_mgr, settings, utils
+import logging_mgr, utils
 from vehicle_config import VehicleConfig
 from camera_sensor_config import CameraSensorConfig
 
@@ -21,28 +21,29 @@ class SessionConfig:
     Configuration class for a capture session.
     '''
     def __init__(self,
-                 scenario: str = settings.default_scenario,
-                 duration_s: int = settings.default_duration_s,
-                 capture_freq_hz: float = settings.default_capture_freq_hz,
-                 map_name: str = settings.default_map,
-                 vehicle: VehicleConfig = VehicleConfig(),
-                 cameras: List[CameraSensorConfig] = [CameraSensorConfig()],
-                 weather: str = settings.default_weather,
-                 time: str = settings.time_of_day_start,
-                 num_ai_traffic_vehicles: int = settings.default_num_ai_traffic_vehicles,
+                 scenario: str = None,
+                 duration_s: int = None,
+                 capture_freq_hz: float = None,
+                 map_name: str = None,
+                 vehicle: VehicleConfig = None,
+                 cameras: List[CameraSensorConfig] = None,
+                 weather: str = None,
+                 time: str = None,
+                 num_ai_traffic_vehicles: int = None,
                  starting_waypoint: str = ''):
         '''
         Initialize a new session configuration with the provided parameters.
         '''
-        self._scenario = scenario
-        self._duration_s = duration_s
-        self._capture_freq_hz = capture_freq_hz
-        self._map = map_name
-        self._vehicle = vehicle
-        self._cameras = cameras
-        self._weather = weather
-        self._time = time
-        self._num_ai_traffic_vehicles = num_ai_traffic_vehicles
+        import settings
+        self._scenario = scenario if scenario is not None else settings.default_scenario
+        self._duration_s = duration_s if duration_s is not None else settings.default_duration_s
+        self._capture_freq_hz = capture_freq_hz if capture_freq_hz is not None else settings.default_capture_freq_hz
+        self._map = map_name if map_name is not None else settings.default_map
+        self._vehicle = vehicle if vehicle is not None else VehicleConfig()
+        self._cameras = cameras if cameras is not None else [CameraSensorConfig()]
+        self._weather = weather if weather is not None else settings.default_weather
+        self._time = time if time is not None else settings.time_of_day_start
+        self._num_ai_traffic_vehicles = num_ai_traffic_vehicles if num_ai_traffic_vehicles is not None else settings.default_num_ai_traffic_vehicles
         self._starting_waypoint = starting_waypoint
 
     @property

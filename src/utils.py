@@ -1,6 +1,8 @@
 import json, os, random, re, zipfile
 from datetime import datetime
 from typing import List
+from scipy.spatial.transform import Rotation as R
+from beamngpy.types import Quat
 
 import gui_mgr, logging_mgr
 
@@ -43,22 +45,15 @@ def hhmmss_to_beamng_time(time: str) -> float:
     Note: Both 0 and 1 in BeamNG time are 12:00:00.
     '''
     return_time = 0.0
-    # Use the new utility function to check the format
     if not is_hhmmss_time_string(time):
-        # Log an error if the time format is invalid and return 0
         logging_mgr.log_error('Invalid time format. Must be in HH:mm:ss format.')
+        raise ValueError('Invalid time format. Must be in HH:mm:ss format.')
     else:
-        # Split the time string into hours, minutes, and seconds
         hours, minutes, seconds = map(int, time.split(':'))
-        # Convert the time to seconds
         total_seconds = hours * 3600 + minutes * 60 + seconds
-        # Adjust the time to start at 12:00:00
         total_seconds -= 43200
-        # If the time is negative, add 24 hours
         total_seconds %= 86400
-        # Convert the time to BeamNG time [0,1]
         return_time = total_seconds / 86400
-    # Return the time in BeamNG format
     return return_time
 
 # --- Path/File Utilities ---
@@ -151,6 +146,7 @@ def create_parent_dict(keys: List[str], values: List[dict]) -> dict:
     output_dict = dict()
     if len(keys) != len(values):
         logging_mgr.log_error('Could not create parent dictionary: keys and values lists must have the same length.')
+        raise ValueError('Could not create parent dictionary: keys and values lists must have the same length.')
     else:
         output_dict = dict(zip(keys, values))
         logging_mgr.log_action(f'Dictionary created with keys: {list(output_dict.keys())}.')
@@ -232,3 +228,30 @@ def read_json_file_inside_zip(zip_file: zipfile.ZipFile, file_path: str) -> dict
     dictionary = json.loads(data.decode('utf-8'))
     logging_mgr.log_action(f'JSON file "{file_path}" read inside ZIP file.')
     return dictionary
+
+# --- Logging/GUI Helpers ---
+def log_and_show_error(message: str) -> None:
+    '''
+    Log an error and show it to the user via GUI.
+    '''
+    logging_mgr.log_error(message)
+    gui_mgr.show_error_message(message)
+
+def euler_to_quaternion(roll: float, pitch: float, yaw: float, degrees: bool = True) -> Quat:
+    '''
+    Convert Euler angles to a quaternion (qx, qy, qz, qw).
+    By default, assumes input is in degrees unless degrees=False (uses radians instead).
+    '''
+    r = R.from_euler('xyz', [roll, pitch, yaw], degrees=degrees)
+    qx, qy, qz, qw = r.as_quat()
+    return Quat(qx, qy, qz, qw)
+
+def tuple_from_str(s: str, type_cast, expected_len: int, sep: str = ",") -> tuple:
+    '''
+    Split a string (e.g. "1, 2, 3") into a tuple of type_casted values.
+    Raises ValueError if the number of elements does not match expected_len.
+    '''
+    parts = [type_cast(x.strip()) for x in s.split(sep)]
+    if len(parts) != expected_len:
+        raise ValueError(f"Expected {expected_len} values, got {len(parts)}: '{s}'")
+    return tuple(parts)

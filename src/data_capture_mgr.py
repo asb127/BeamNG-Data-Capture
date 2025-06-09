@@ -3,7 +3,7 @@ from beamngpy.sensors import Camera, AdvancedIMU
 from beamngpy import BeamNGpy
 from beamngpy.vehicle import Vehicle
 
-import logging_mgr, settings, simulation_mgr, utils
+import logging_mgr, simulation_mgr, utils
 from camera_sensor_config import CameraSensorConfig
 from beamngpy.types import StrDict
 
@@ -27,6 +27,7 @@ def create_camera_sensor(bng: BeamNGpy,
 def create_imu_sensor(bng: BeamNGpy,
                       vehicle: Vehicle,
                       name: str) -> AdvancedIMU:
+    import settings
     # Create an Inertial Measurement Unit (IMU) sensor attached to the vehicle
     sensor_imu = AdvancedIMU(name=name,
                              bng=bng,

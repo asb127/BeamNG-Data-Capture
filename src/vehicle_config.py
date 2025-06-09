@@ -1,6 +1,8 @@
 from typing import TypedDict
 
-import logging_mgr, settings
+import logging_mgr
+# Remove settings import from here
+
 from beamngpy.types import Float3, Quat
 
 class VehicleConfigDict(TypedDict):
@@ -14,17 +16,19 @@ class VehicleConfig:
     Configuration class for a vehicle.
     '''
     def __init__(self,
-                 name: str = settings.default_vehicle_name,
-                 model: str = settings.default_vehicle_model,
-                 initial_position: Float3 = settings.default_vehicle_initial_position,
-                 initial_rotation: Quat = settings.default_vehicle_initial_rotation):
+                 name: str = None,
+                 model: str = None,
+                 initial_position: Float3 = None,
+                 initial_rotation: Quat = None):
         '''
         Initialize a new vehicle configuration with the provided parameters.
         '''
-        self._name = name
-        self._model = model
-        self._initial_position = initial_position
-        self._initial_rotation = initial_rotation
+        import settings 
+
+        self._name = name if name is not None else settings.default_vehicle_name
+        self._model = model if model is not None else settings.default_vehicle_model
+        self._initial_position = initial_position if initial_position is not None else settings.default_vehicle_initial_position
+        self._initial_rotation = initial_rotation if initial_rotation is not None else settings.default_vehicle_initial_rotation
 
     @property
     def name(self) -> str:
@@ -40,6 +44,7 @@ class VehicleConfig:
         '''
         if not name:
             raise ValueError('Vehicle name cannot be empty.')
+        self._name = name
 
     @property
     def model(self) -> str:
@@ -54,6 +59,8 @@ class VehicleConfig:
         If the provided model is not supported, a warning is logged and the default vehicle model is used.
         If the default vehicle model is not supported, a ValueError is raised.
         '''
+        import settings 
+
         if not model or model not in settings.supported_models:
             if settings.default_vehicle_model in settings.supported_models:
                 logging_mgr.log_warning(f'Vehicle model "{model}" is not supported. Using default vehicle model "{settings.default_vehicle_model}".')
@@ -100,6 +107,8 @@ class VehicleConfig:
 
     def validate(self) -> None:
         '''Validate the vehicle configuration. Same restrictions as setters.'''
+        import settings 
+
         # Validate the vehicle name
         if not self._name:
             raise ValueError('Vehicle name cannot be empty.')

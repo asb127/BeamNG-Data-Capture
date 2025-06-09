@@ -1,8 +1,7 @@
-import data_capture_mgr, logging_mgr, scenario_mgr, session_config, settings, simulation_mgr, vehicle_mgr, utils
 import time
 
-# Set random seed for reproducibility
-utils.set_random_seed(settings.random_seed)
+import data_capture_mgr, gui_mgr, logging_mgr, scenario_mgr, session_config, settings, simulation_mgr, vehicle_mgr, utils
+from gui_tkinter import TkinterGuiApi
 
 # Create an output directory to store the session data
 output_dir = utils.create_output_dir(settings.output_root_path)
@@ -10,15 +9,26 @@ output_dir = utils.create_output_dir(settings.output_root_path)
 # Set up logging for the data capture process
 logging_mgr.configure_logging(output_dir)
 
+gui_mgr.set_gui_api(TkinterGuiApi())
+
+session = gui_mgr.get_session_config()
+if session is None:
+    # User cancelled the session configuration, exit the program
+    logging_mgr.log_action('Session configuration window closed without requesting capture session, quitting.')
+    exit(0)
+
+# Set random seed for reproducibility
+utils.set_random_seed(settings.random_seed)
+
 try:
     # Create the session configuration
     session = session_config.create_session_config()
     # Validate the session configuration
     session.validate()
 except ValueError as e:
-    # A value error occurred while creating the session configuration, the capture session is aborted
-    logging_mgr.log_error(f'Value error creating session configuration, aborting capture session: {e}')
-    quit()
+    # Log and show error in one call, then quit
+    utils.log_and_show_error(f'Value error creating session configuration, aborting capture session: {e}')
+    exit(1)
 
 # Refresh the available weather presets
 scenario_mgr.get_weather_presets()
@@ -98,9 +108,12 @@ try:
 
     # Initialize variables used for night-time checks
     headlights_on = False
-    night_time_start = utils.hhmmss_to_beamng_time(settings.night_time_start)
-    night_time_end = utils.hhmmss_to_beamng_time(settings.night_time_end)
-
+    try:
+        night_time_start = utils.hhmmss_to_beamng_time(settings.night_time_start)
+        night_time_end = utils.hhmmss_to_beamng_time(settings.night_time_end)
+    except ValueError as e:
+        utils.log_and_show_error(str(e))
+        exit(1)
     # Set the time of day settings for the session
     simulation_mgr.set_time_of_day(bng,
                                    time_of_day=session.time,
@@ -126,7 +139,7 @@ try:
     if not force_capture_freq_hz:
         simulation_mgr.resume_simulation(bng)
 
-    # Iterate to capture one frame
+    # Main capture loop and logic
     for cur_frame_num in range(num_frames):
         # Check time of day
         time_of_day = simulation_mgr.get_time_of_day(bng)
@@ -195,14 +208,10 @@ try:
                         last_frame_period_s = current_sim_time_s - last_capture_time_s
 
 except KeyboardInterrupt:
-    # User stopped the simulation process
-    logging_mgr.log_action('Simulation stopped by user.')
+    utils.log_and_show_error('Simulation stopped by user.')
 except ValueError as e:
-    # A value error stopped the simulation process
-    logging_mgr.log_error(f'Simulation stopped by a value error: {e}')
-except Exception as e:
-    # An unexpected error stopped the simulation process
-    logging_mgr.log_error(f'Simulation stopped by an unexpected error: {e}')
+    utils.log_and_show_error(f'Simulation stopped by a value error: {e}')
+    exit(1)
 finally:
     # Simulation finished, close
     logging_mgr.log_action('Simulation finished.')
