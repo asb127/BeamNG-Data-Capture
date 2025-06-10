@@ -1,9 +1,10 @@
 from gui_api import (GuiApi, RadioButton, RadioGroup, FileInput, IntInput, FloatInput,
                      StrInput, Label, Button, Checkbox, Window, GridContainer, RadioOption)
+from type_defs import Any, Callable, Int2, List, Optional
 
 import tkinter as tk
 from tkinter import messagebox, filedialog
-from typing import Any, Callable, List, Optional
+
 
 
 # --- Window Implementation ---
@@ -52,21 +53,21 @@ class TkGridContainer(GridContainer):
 
 # --- Widget Implementations ---
 class TkRadioButton(RadioButton):
-    '''Tkinter implementation of a radio button.'''
+    """Tkinter implementation of a radio button."""
     def __init__(self, widget: tk.Radiobutton):
-        '''Initialize a TkRadioButton with a Tkinter Radiobutton widget.'''
+        """Initialize a TkRadioButton with a Tkinter Radiobutton widget."""
         self.widget = widget
     def get(self) -> str:
-        '''Get the value of the associated variable.'''
+        """Get the value of the associated variable."""
         return self.widget.cget('value')
     def destroy(self) -> None:
-        '''Destroy the radio button widget.'''
+        """Destroy the radio button widget."""
         self.widget.destroy()
 
 class TkRadioGroup(RadioGroup):
-    '''Tkinter implementation of a radio group.'''
+    """Tkinter implementation of a radio group."""
     def __init__(self, frame, variable: tk.StringVar = None):
-        '''Initialize a TkRadioGroup with an optional StringVar.'''
+        """Initialize a TkRadioGroup with an optional StringVar."""
         if variable is None:
             variable = tk.StringVar()
         self.frame = frame
@@ -74,13 +75,13 @@ class TkRadioGroup(RadioGroup):
         self.buttons = []
 
     def add_button(self, button: TkRadioButton) -> None:
-        '''Add a radio button to the group.'''
+        """Add a radio button to the group."""
         self.buttons.append(button)
         button.widget.config(variable=self.variable)
         button.widget.pack(anchor="w", in_=self.frame)
 
     def set_buttons(self, buttons: List[TkRadioButton]) -> None:
-        '''Set the list of radio buttons for this group, first is default.'''
+        """Set the list of radio buttons for this group, first is default."""
         self.buttons.clear()
         for idx, button in enumerate(buttons):
             self.add_button(button)
@@ -88,114 +89,127 @@ class TkRadioGroup(RadioGroup):
                 self.set_default(button.widget.cget('value'))
 
     def get(self) -> str:
+        """Get the currently selected value."""
         return self.variable.get()
 
     def set_default(self, value: str) -> None:
+        """Set the default (selected) value for the radio group."""
         self.variable.set(value)
 
     def destroy(self) -> None:
-        '''Destroy all radio buttons in the group.'''
+        """Destroy all radio buttons in the group."""
         for btn in self.buttons:
             btn.destroy()
         self.buttons.clear()
         self.frame.destroy()
 
 class TkFileInput(FileInput):
-    '''Tkinter implementation of a file input.'''
+    """Tkinter implementation of a file input."""
     def __init__(self, var: tk.StringVar, entry_widget: tk.Entry = None):
-        '''Initialize a TkFileInput with a StringVar and optional Entry widget.'''
+        """Initialize a TkFileInput with a StringVar and optional Entry widget."""
         self.var = var
         self.entry_widget = entry_widget
     def get(self) -> str:
+        """Get the current value of the file input."""
         return self.var.get()
     def destroy(self) -> None:
-        '''Destroy the entry widget if present.'''
+        """Destroy the entry widget if present."""
         if self.entry_widget is not None:
             self.entry_widget.destroy()
 
 class TkIntInput(IntInput):
-    '''Tkinter implementation of an integer input.'''
+    """Tkinter implementation of an integer input."""
     def __init__(self, var: tk.StringVar, entry_widget: tk.Entry = None):
-        '''Initialize a TkIntInput with a StringVar and optional Entry widget.'''
+        """Initialize a TkIntInput with a StringVar and optional Entry widget."""
         self.var = var
         self.entry_widget = entry_widget
     def get(self) -> int:
+        """Get the integer value from the input, or None if invalid."""
         try:
             return int(self.var.get())
         except Exception:
             return None
     def destroy(self) -> None:
-        '''Destroy the entry widget if present.'''
+        """Destroy the entry widget if present."""
         if self.entry_widget is not None:
             self.entry_widget.destroy()
 
 class TkFloatInput(FloatInput):
-    '''Tkinter implementation of a float input.'''
+    """Tkinter implementation of a float input."""
     def __init__(self, var: tk.StringVar, entry_widget: tk.Entry = None):
-        '''Initialize a TkFloatInput with a StringVar and optional Entry widget.'''
+        """Initialize a TkFloatInput with a StringVar and optional Entry widget."""
         self.var = var
         self.entry_widget = entry_widget
     def get(self) -> float:
+        """Get the float value from the input, or None if invalid."""
         try:
             return float(self.var.get())
         except Exception:
             return None
     def destroy(self) -> None:
-        '''Destroy the entry widget if present.'''
+        """Destroy the entry widget if present."""
         if self.entry_widget is not None:
             self.entry_widget.destroy()
 
 class TkStrInput(StrInput):
-    '''Tkinter implementation of a string input.'''
+    """Tkinter implementation of a string input."""
     def __init__(self, var: tk.StringVar, entry_widget: tk.Entry = None):
-        '''Initialize a TkStrInput with a StringVar and optional Entry widget.'''
+        """Initialize a TkStrInput with a StringVar and optional Entry widget."""
         self.var = var
         self.entry_widget = entry_widget
     def get(self) -> str:
+        """Get the string value from the input."""
         return self.var.get()
     def destroy(self) -> None:
-        '''Destroy the entry widget if present.'''
+        """Destroy the entry widget if present."""
         if self.entry_widget is not None:
             self.entry_widget.destroy()
 
 class TkLabel(Label):
+    """Tkinter implementation of a label."""
     def __init__(self, widget: tk.Label):
+        """Initialize a TkLabel with a Tkinter Label widget."""
         self.widget = widget
     def get(self) -> None:
+        """Labels do not have a value."""
         return None
     def destroy(self) -> None:
-        '''Destroy the label widget.'''
+        """Destroy the label widget."""
         self.widget.destroy()
 
 class TkButton(Button):
+    """Tkinter implementation of a button."""
     def __init__(self, widget: tk.Button):
+        """Initialize a TkButton with a Tkinter Button widget."""
         self.widget = widget
     def get(self) -> None:
+        """Buttons do not have a value."""
         return None
     def destroy(self) -> None:
-        '''Destroy the button widget.'''
+        """Destroy the button widget."""
         self.widget.destroy()
 
 class TkCheckbox(Checkbox):
-    '''Tkinter implementation of a checkbox.'''
+    """Tkinter implementation of a checkbox."""
     def __init__(self, var: tk.BooleanVar, widget: tk.Checkbutton = None):
-        '''Initialize a TkCheckbox with a BooleanVar and optional Checkbutton widget.'''
+        """Initialize a TkCheckbox with a BooleanVar and optional Checkbutton widget."""
         self.var = var
         self.widget = widget
     def get(self) -> bool:
+        """Get the boolean value of the checkbox."""
         return self.var.get()
     def destroy(self) -> None:
-        '''Destroy the checkbox widget if present.'''
+        """Destroy the checkbox widget if present."""
         if self.widget is not None:
             self.widget.destroy()
 
 # --- API Implementation ---
 class TkinterGuiApi(GuiApi):
-    '''
+    """
     Description:
     Implementation of the GuiApi interface using Tkinter. Provides functions to create and manage
     GUI elements for session configuration and user interaction.
-    '''
+    """
 
     def add_label(self, parent, text, font=None, pady=0, *, row=None, column=None, rowspan=1, columnspan=1):
         label = tk.Label(parent.get(), text=text, font=font)
@@ -291,25 +305,23 @@ class TkinterGuiApi(GuiApi):
             cb.pack(anchor="w", padx=20)
         return TkCheckbox(var)
 
-    def create_window(self, title: str, size: tuple = (400, 400)) -> TkWindow:
+    def create_window(self, title: str, size: Int2 = (400, 400)) -> TkWindow:
         root = tk.Tk()
         root.title(title)
         root.geometry(f"{size[0]}x{size[1]}")
         return TkWindow(root)
 
-    def create_subwindow(self, parent: Any, title: str, size: tuple = (350, 400)) -> TkSubWindow:
+    def create_subwindow(self, parent: Any, title: str, size: Int2 = (350, 400)) -> TkSubWindow:
         toplevel = tk.Toplevel(parent.get())
         toplevel.title(title)
         toplevel.geometry(f"{size[0]}x{size[1]}")
         return TkSubWindow(toplevel)
 
     def close_window(self, window: TkWindow) -> None:
-        '''Close and destroy the main/root window.'''
         window.quit()
         window.destroy()
 
     def close_subwindow(self, subwindow: TkSubWindow) -> None:
-        '''Close and destroy a subwindow (Toplevel).'''
         subwindow.destroy()
 
     def run_window(self, window: Window) -> None:
@@ -318,112 +330,10 @@ class TkinterGuiApi(GuiApi):
     def wait_window(self, window: Window) -> None:
         window.wait_window()
 
-    def close_window(self, window: Window) -> None:
-        '''Close and destroy the main/root window.'''
-        if isinstance(window, TkWindow):
-            window.quit()
-            window.destroy()
-        else:
-            try:
-                window.destroy()
-            except Exception:
-                pass
-
-    def close_subwindow(self, subwindow: Window) -> None:
-        '''Close and destroy a subwindow (Toplevel).'''
-        if isinstance(subwindow, TkSubWindow):
-            subwindow.destroy()
-        else:
-            try:
-                subwindow.destroy()
-            except Exception:
-                pass
-
-    def run_window(self, window: Window) -> None:
-        '''Run the Tkinter main loop for the window.'''
-        window.mainloop()
-
     def show_error_message(self, message: str) -> None:
-        '''Show an error message popup.'''
         tk.Tk().withdraw()
         messagebox.showerror("Error", message)
 
     def show_warning_message(self, message: str) -> None:
-        '''Show a warning message popup.'''
         tk.Tk().withdraw()
         messagebox.showwarning("Warning", message)
-
-    def get_form_result(self, title, fields, actions):
-        root = tk.Tk()
-        root.title(title)
-        root.geometry("400x400")
-        variables = {}
-        radio_groups = {}
-
-        for field in fields:
-            type = field["type"]
-            key = field["key"]
-            if type == "radio_group":
-                group_var = tk.StringVar(value=None)
-                radio_groups[key] = group_var
-                for opt in field["options"]:
-                    val = opt["value"]
-                    default = opt.get("default", False)
-                    if default:
-                        group_var.set(val)
-                    tk.Radiobutton(root, text=opt["label"], variable=group_var, value=val).pack(anchor="w")
-                variables[key] = group_var
-            elif type == "file":
-                frame = tk.Frame(root)
-                frame.pack(anchor="w", padx=20)
-                var = tk.StringVar()
-                tk.Label(frame, text=field["label"]).pack(side="left")
-                tk.Entry(frame, textvariable=var, width=30).pack(side="left")
-                tk.Button(frame, text="Browse", command=lambda v=var: v.set(filedialog.askopenfilename())).pack(side="left")
-                variables[key] = var
-            elif type == "int":
-                var = tk.StringVar(value=str(field.get("default", "")))
-                tk.Label(root, text=field["label"]).pack(anchor="w", padx=20)
-                tk.Entry(root, textvariable=var).pack(anchor="w", padx=20)
-                variables[key] = var
-            elif type == "float":
-                var = tk.StringVar(value=str(field.get("default", "")))
-                tk.Label(root, text=field["label"]).pack(anchor="w", padx=20)
-                tk.Entry(root, textvariable=var).pack(anchor="w", padx=20)
-                variables[key] = var
-            elif type == "str":
-                var = tk.StringVar(value=field.get("default", ""))
-                tk.Label(root, text=field["label"]).pack(anchor="w", padx=20)
-                tk.Entry(root, textvariable=var).pack(anchor="w", padx=20)
-                variables[key] = var
-
-        result = {}
-
-        def on_action(action_key):
-            # Gather all values
-            for field in fields:
-                key = field["key"]
-                type = field["type"]
-                var = variables[key]
-                val = var.get()
-                if type == "int":
-                    try:
-                        val = int(val)
-                    except Exception:
-                        val = None
-                elif type == "float":
-                    try:
-                        val = float(val)
-                    except Exception:
-                        val = None
-                result[key] = val
-            result["action"] = action_key
-            root.quit()
-
-        # Add action buttons
-        for action in actions:
-            tk.Button(root, text=action["label"], command=lambda k=action["key"]: on_action(k)).pack(side="left", padx=20, pady=20)
-
-        root.mainloop()
-        root.destroy()
-        return result if result.get("action") == "start" else None

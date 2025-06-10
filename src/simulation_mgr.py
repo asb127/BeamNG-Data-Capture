@@ -1,6 +1,6 @@
 from beamngpy import BeamNGpy
 from beamngpy.scenario import Scenario
-from beamngpy.types import StrDict, Time
+from type_defs import StrDict, Time
 
 import logging_mgr, settings
 

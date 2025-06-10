@@ -5,7 +5,7 @@ from beamngpy.vehicle import Vehicle
 
 import logging_mgr, simulation_mgr, utils
 from camera_sensor_config import CameraSensorConfig
-from beamngpy.types import StrDict
+from type_defs import StrDict
 
 def create_camera_sensor(bng: BeamNGpy,
                          vehicle: Vehicle,
@@ -73,9 +73,7 @@ def save_camera_image_data(camera: Camera, output_dir: str) -> None:
     logging_mgr.log_action(f'Camera "{camera.name}" data saved in "{output_dir}".')
 
 def save_all_camera_image_data(camera_list, frame_dir):
-    '''
-    Extract and save all camera image data in parallel from a list of camera sensors.
-    '''
+    """Extract and save all camera image data in parallel from a list of camera sensors."""
     with ThreadPoolExecutor() as executor:
         futures = []
         for camera_sensor in camera_list:
@@ -128,7 +126,7 @@ def extract_vehicle_simulation_time_from_metadata(vehicle_metadata) -> float:
     return vehicle_metadata['time']
 
 def extract_time_of_day_metadata(bng: BeamNGpy) -> StrDict:
-    '''Extract time of day metadata from the simulator.'''
+    """Extract time of day metadata from the simulator."""
     time_of_day = simulation_mgr.get_time_of_day(bng)
     # Extract time of day metadata into a dictionary
     metadata = {

@@ -193,9 +193,9 @@ try:
 
                 if last_frame_period_s > capture_period_s:
                     # Log a warning that the capture frequency is too high
-                    logging_mgr.log_warning(f'''Capture frequency too high for frame {cur_frame_num}.
+                    logging_mgr.log_warning(f"""Capture frequency too high for frame {cur_frame_num}.
                                             \nPrevious capture took {last_frame_period_s} seconds.
-                                            \nCapture period is {capture_period_s} seconds.''')
+                                            \nCapture period is {capture_period_s} seconds.""")
                 else:
                     # If the capture period hasn't passed yet, wait until it does
                     while last_frame_period_s < capture_period_s:

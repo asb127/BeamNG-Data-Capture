@@ -1,8 +1,6 @@
 import os
 import utils
-from typing import Dict, List
-
-from beamngpy.types import Float3, Quat
+from type_defs import Dict, Float3, Quat, List
 
 # General variables
 # - Here are defined the general variables used by the application
