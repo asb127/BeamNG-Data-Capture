@@ -211,12 +211,13 @@ class TkinterGuiApi(GuiApi):
     GUI elements for session configuration and user interaction.
     """
 
-    def add_label(self, parent, text, font=None, pady=0, *, row=None, column=None, rowspan=1, columnspan=1):
+    def add_label(self, parent, text, font=None, *, row=None, column=None, rowspan=1, columnspan=1, padx=0, pady=0, ipadx=0, ipady=0):
         label = tk.Label(parent.get(), text=text, font=font)
         if isinstance(parent, TkGridContainer) and row is not None and column is not None:
-            label.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, sticky="nsew", pady=pady)
+            label.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, sticky="nsew",
+                       padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
         else:
-            label.pack(pady=pady)
+            label.pack(padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
         return TkLabel(label)
 
     def add_radio_group(self, parent, label, *, row=None, column=None, rowspan=1, columnspan=1):
@@ -252,41 +253,44 @@ class TkinterGuiApi(GuiApi):
         tk.Button(frame, text="Browse", command=lambda: var.set(filedialog.askopenfilename())).pack(side="left")
         return TkFileInput(var)
 
-    def add_int_input(self, parent, label, default=0, *, row=None, column=None, rowspan=1, columnspan=1):
+    def add_int_input(self, parent, default=0, *,
+                      row=None, column=None, rowspan=1, columnspan=1,
+                      padx=0, pady=0, ipadx=0, ipady=0):
         var = tk.StringVar(value=str(default))
-        label_widget = tk.Label(parent.get(), text=label)
         entry_widget = tk.Entry(parent.get(), textvariable=var)
         if isinstance(parent, TkGridContainer) and row is not None and column is not None:
-            label_widget.grid(row=row, column=column, sticky="w")
-            entry_widget.grid(row=row, column=column+1, sticky="w")
+            entry_widget.grid(row=row, column=column, sticky="w",
+                             padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
+            return TkIntInput(var, entry_widget)
         else:
-            label_widget.pack(anchor="w", padx=20)
             entry_widget.pack(anchor="w", padx=20)
-        return TkIntInput(var)
+            return TkIntInput(var, entry_widget)
 
-    def add_float_input(self, parent, label, default=0.0, *, row=None, column=None, rowspan=1, columnspan=1):
+    def add_float_input(self, parent, default=0.0, *,
+                        row=None, column=None, rowspan=1, columnspan=1,
+                        padx=0, pady=0, ipadx=0, ipady=0):
         var = tk.StringVar(value=str(default))
-        label_widget = tk.Label(parent.get(), text=label)
         entry_widget = tk.Entry(parent.get(), textvariable=var)
         if isinstance(parent, TkGridContainer) and row is not None and column is not None:
-            label_widget.grid(row=row, column=column, sticky="w")
-            entry_widget.grid(row=row, column=column+1, sticky="w")
+            entry_widget.grid(row=row, column=column, sticky="w",
+                             padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
+            return TkFloatInput(var, entry_widget)
         else:
-            label_widget.pack(anchor="w", padx=20)
             entry_widget.pack(anchor="w", padx=20)
-        return TkFloatInput(var)
+            return TkFloatInput(var, entry_widget)
 
-    def add_str_input(self, parent, label, default="", *, row=None, column=None, rowspan=1, columnspan=1):
+    def add_str_input(self, parent, default="", *,
+                      row=None, column=None, rowspan=1, columnspan=1,
+                      padx=0, pady=0, ipadx=0, ipady=0):
         var = tk.StringVar(value=default)
-        label_widget = tk.Label(parent.get(), text=label)
         entry_widget = tk.Entry(parent.get(), textvariable=var)
         if isinstance(parent, TkGridContainer) and row is not None and column is not None:
-            label_widget.grid(row=row, column=column, sticky="w")
-            entry_widget.grid(row=row, column=column+1, sticky="w")
+            entry_widget.grid(row=row, column=column, sticky="w",
+                             padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
+            return TkStrInput(var, entry_widget)
         else:
-            label_widget.pack(anchor="w", padx=20)
             entry_widget.pack(anchor="w", padx=20)
-        return TkStrInput(var)
+            return TkStrInput(var, entry_widget)
 
     def add_button(self, parent, text, command, side="left", padx=0, pady=0, *, row=None, column=None, rowspan=1, columnspan=1):
         btn = tk.Button(parent.get(), text=text, command=command)
@@ -296,9 +300,9 @@ class TkinterGuiApi(GuiApi):
             btn.pack(side=side, padx=padx, pady=pady)
         return TkButton(btn)
 
-    def add_checkbox(self, parent, label, default=False, *, row=None, column=None, rowspan=1, columnspan=1):
+    def add_checkbox(self, parent, default=False, *, row=None, column=None, rowspan=1, columnspan=1):
         var = tk.BooleanVar(value=default)
-        cb = tk.Checkbutton(parent.get(), text=label, variable=var)
+        cb = tk.Checkbutton(parent.get(), variable=var)
         if isinstance(parent, TkGridContainer) and row is not None and column is not None:
             cb.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, sticky="w")
         else:
@@ -329,6 +333,31 @@ class TkinterGuiApi(GuiApi):
 
     def wait_window(self, window: Window) -> None:
         window.wait_window()
+
+    def add_grid_container(
+        self,
+        parent,
+        num_rows,
+        num_columns,
+        row_weights,
+        column_weights,
+        *,
+        row=None,
+        column=None,
+        rowspan=1,
+        columnspan=1,
+        padx=0,
+        pady=0,
+        ipadx=0,
+        ipady=0
+    ):
+        frame = tk.Frame(parent.get())
+        if isinstance(parent, TkGridContainer) and row is not None and column is not None:
+            frame.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, sticky="nsew",
+                       padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
+        else:
+            frame.pack(fill="both", expand=True, padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
+        return TkGridContainer(frame, num_rows, num_columns, row_weights, column_weights)
 
     def show_error_message(self, message: str) -> None:
         tk.Tk().withdraw()

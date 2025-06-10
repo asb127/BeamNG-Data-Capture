@@ -127,56 +127,86 @@ class GuiApi(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def add_label(self, parent: Container, text: str, font: Optional[Any] = None, pady: int = 0, *,
-                  row: int = None, column: int = None, rowspan: int = 1, columnspan: int = 1) -> Label:
-        """Create a Label widget in the provided window and return it."""
-    def close_subwindow(self, subwindow: Window) -> None:
-        """Close and destroy a subwindow (child window) object."""
+    def add_grid_container(
+        self,
+        parent: Container,
+        num_rows: int,
+        num_columns: int,
+        row_weights: List[int],
+        column_weights: List[int],
+        *,
+        row: int = None,
+        column: int = None,
+        rowspan: int = 1,
+        columnspan: int = 1,
+        padx: int = 0,
+        pady: int = 0,
+        ipadx: int = 0,
+        ipady: int = 0
+    ) -> GridContainer:
+        """
+        Create and add a grid container to the parent container.
+        """
         raise NotImplementedError()
 
     @abstractmethod
-    def add_radio_group(self, parent: Container, label: str, *,
-                        row: int = None, column: int = None, rowspan: int = 1, columnspan: int = 1) -> RadioGroup:
+    def add_label(
+        self,
+        parent: Container,
+        text: str,
+        font: Optional[Any] = None,
+        *,
+        row: int = None,
+        column: int = None,
+        rowspan: int = 1,
+        columnspan: int = 1,
+        padx: int = 0,
+        pady: int = 0,
+        ipadx: int = 0,
+        ipady: int = 0
+    ) -> Label:
+        """Create a Label widget in the provided window and return it."""
+        raise NotImplementedError()
+
+    @abstractmethod
+    def add_radio_group(
+        self,
+        parent: Container,
+        label: str,
+        *,
+        row: int = None,
+        column: int = None,
+        rowspan: int = 1,
+        columnspan: int = 1,
+        padx: int = 0,
+        pady: int = 0,
+        ipadx: int = 0,
+        ipady: int = 0
+    ) -> RadioGroup:
         """
         Add a radio group container to the parent.
         Radio buttons must be created separately and added to the group using add_button.
         """
-    def run_window(self, window: Window) -> None:
-        """Run the window's main loop."""
         raise NotImplementedError()
 
     @abstractmethod
-    def add_radio_button(self, parent: Container, text: str, variable: Any, value: str, group: RadioGroup = None, *,
-                         row: int = None, column: int = None, rowspan: int = 1, columnspan: int = 1) -> RadioButton:
-        """
-        Create a single radio button in the provided window, sharing a variable with others.
-        If a RadioGroup is provided, the button is registered with it.
-        """
-    def add_label(self, window: Window, text: str, font: Optional[Any] = None, pady: int = 0) -> Label:
-        """Create a Label widget in the provided window and return it."""
-        raise NotImplementedError()
-
-    @abstractmethod
-    def add_file_input(self, parent: Container, label: str, *,
-                       row: int = None, column: int = None, rowspan: int = 1, columnspan: int = 1) -> FileInput:
-        """Create a FileInput widget in the provided window and return it."""
-    def add_radio_group(self, window: Window, label: str, options: Any, default: Optional[str] = None) -> RadioGroup:
-        """Add a group of radio buttons to the window."""
-        raise NotImplementedError()
-
-    @abstractmethod
-    def add_int_input(self, parent: Container, label: str, default: int = 0, *,
-                      row: int = None, column: int = None, rowspan: int = 1, columnspan: int = 1) -> IntInput:
-        """Create a IntInput widget in the provided window and return it."""
-    def create_radio_group(self, variable: Any = None) -> RadioGroup:
-        """Create and return a RadioGroup object with a shared variable."""
-        raise NotImplementedError()
-
-    @abstractmethod
-    def add_float_input(self, parent: Container, label: str, default: float = 0.0, *,
-                        row: int = None, column: int = None, rowspan: int = 1, columnspan: int = 1) -> FloatInput:
-        """Create a FloatInput widget in the provided window and return it."""
-    def add_radio_button(self, window: Window, text: str, variable: Any, value: str, group: RadioGroup = None) -> RadioButton:
+    def add_radio_button(
+        self,
+        parent: Container,
+        text: str,
+        variable: Any,
+        value: str,
+        group: RadioGroup = None,
+        *,
+        row: int = None,
+        column: int = None,
+        rowspan: int = 1,
+        columnspan: int = 1,
+        padx: int = 0,
+        pady: int = 0,
+        ipadx: int = 0,
+        ipady: int = 0
+    ) -> RadioButton:
         """
         Create a single radio button in the provided window, sharing a variable with others.
         If a RadioGroup is provided, the button is registered with it.
@@ -184,41 +214,113 @@ class GuiApi(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def add_str_input(self, parent: Container, label: str, default: str = "", *,
-                      row: int = None, column: int = None, rowspan: int = 1, columnspan: int = 1) -> StrInput:
-        """Create a StrInput widget in the provided window and return it."""
-    def add_file_input(self, window: Window, label: str) -> FileInput:
+    def add_file_input(
+        self,
+        parent: Container,
+        label: str,
+        *,
+        row: int = None,
+        column: int = None,
+        rowspan: int = 1,
+        columnspan: int = 1,
+        padx: int = 0,
+        pady: int = 0,
+        ipadx: int = 0,
+        ipady: int = 0
+    ) -> FileInput:
         """Create a FileInput widget in the provided window and return it."""
         raise NotImplementedError()
 
     @abstractmethod
-    def add_button(self, parent: Container, text: str, command: Callable[[], None], side: str = "left", padx: int = 0, pady: int = 0, *,
-                   row: int = None, column: int = None, rowspan: int = 1, columnspan: int = 1) -> Button:
-        """Create a Button widget in the provided window and return it."""
-    def add_int_input(self, window: Window, label: str, default: int = 0) -> IntInput:
+    def add_int_input(
+        self,
+        parent: Container,
+        default: int = 0,
+        *,
+        row: int = None,
+        column: int = None,
+        rowspan: int = 1,
+        columnspan: int = 1,
+        padx: int = 0,
+        pady: int = 0,
+        ipadx: int = 0,
+        ipady: int = 0
+    ) -> IntInput:
         """Create a IntInput widget in the provided window and return it."""
         raise NotImplementedError()
 
     @abstractmethod
-    def add_checkbox(self, parent: Container, label: str, default: bool = False, *,
-                     row: int = None, column: int = None, rowspan: int = 1, columnspan: int = 1) -> Checkbox:
-        """Create a Checkbox widget in the provided window and return it."""
-    def add_float_input(self, window: Window, label: str, default: float = 0.0) -> FloatInput:
+    def add_float_input(
+        self,
+        parent: Container,
+        default: float = 0.0,
+        *,
+        row: int = None,
+        column: int = None,
+        rowspan: int = 1,
+        columnspan: int = 1,
+        padx: int = 0,
+        pady: int = 0,
+        ipadx: int = 0,
+        ipady: int = 0
+    ) -> FloatInput:
         """Create a FloatInput widget in the provided window and return it."""
         raise NotImplementedError()
 
     @abstractmethod
-    def add_str_input(self, window: Window, label: str, default: str = "") -> StrInput:
+    def add_str_input(
+        self,
+        parent: Container,
+        default: str = "",
+        *,
+        row: int = None,
+        column: int = None,
+        rowspan: int = 1,
+        columnspan: int = 1,
+        padx: int = 0,
+        pady: int = 0,
+        ipadx: int = 0,
+        ipady: int = 0
+    ) -> StrInput:
         """Create a StrInput widget in the provided window and return it."""
         raise NotImplementedError()
 
     @abstractmethod
-    def add_button(self, window: Window, text: str, command: Callable[[], None], side: str = "left", padx: int = 0, pady: int = 0) -> Button:
+    def add_button(
+        self,
+        parent: Container,
+        text: str,
+        command: Callable[[], None],
+        side: str = "left",
+        *,
+        row: int = None,
+        column: int = None,
+        rowspan: int = 1,
+        columnspan: int = 1,
+        padx: int = 0,
+        pady: int = 0,
+        ipadx: int = 0,
+        ipady: int = 0
+    ) -> Button:
         """Create a Button widget in the provided window and return it."""
         raise NotImplementedError()
 
     @abstractmethod
-    def add_checkbox(self, window: Window, label: str, default: bool = False) -> Checkbox:
+    def add_checkbox(
+        self,
+        parent: Container,
+        label: str,
+        default: bool = False,
+        *,
+        row: int = None,
+        column: int = None,
+        rowspan: int = 1,
+        columnspan: int = 1,
+        padx: int = 0,
+        pady: int = 0,
+        ipadx: int = 0,
+        ipady: int = 0
+    ) -> Checkbox:
         """Create a Checkbox widget in the provided window and return it."""
         raise NotImplementedError()
 
