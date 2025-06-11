@@ -1,6 +1,6 @@
 from gui_api import (GuiApi, RadioButton, RadioGroup, FileInput, IntInput, FloatInput,
-                     StrInput, Label, Button, Checkbox, Window, GridContainer, RadioOption)
-from type_defs import Any, Callable, Int2, List, Optional
+                     StrInput, Label, Button, Checkbox, Window, GridContainer, GuiWidget)
+from type_defs import Any, Int2, List
 
 import tkinter as tk
 from tkinter import messagebox, filedialog
@@ -366,3 +366,11 @@ class TkinterGuiApi(GuiApi):
     def show_warning_message(self, message: str) -> None:
         tk.Tk().withdraw()
         messagebox.showwarning("Warning", message)
+
+    def focus_on(self, widget: GuiWidget):
+        """Set focus to the given widget if possible."""
+        tk_widget = getattr(widget, 'entry_widget', None)
+        if tk_widget is None:
+            tk_widget = getattr(widget, 'widget', None)
+        if tk_widget is not None and hasattr(tk_widget, 'focus_set'):
+            tk_widget.focus_set()

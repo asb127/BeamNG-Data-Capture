@@ -15,6 +15,8 @@ class CameraSensorConfig:
     def __init__(self,
                  name: str = None,
                  position: Float3 = None,
+                 direction: Float3 = None,
+                 up_vector: Float3 = None,
                  resolution: Int2 = None,
                  is_render_colours: bool = None,
                  is_render_annotations: bool = None,
@@ -25,6 +27,8 @@ class CameraSensorConfig:
         import settings
         self._name = name if name is not None else settings.default_camera_name
         self._position = position if position is not None else settings.default_camera_position
+        self._direction = direction if direction is not None else settings.default_camera_direction
+        self._up_vector = up_vector if up_vector is not None else settings.default_camera_up_vector
         self._resolution = resolution if resolution is not None else settings.default_camera_resolution
         self._is_render_colours = is_render_colours if is_render_colours is not None else settings.default_camera_render_flags['colour']
         self._is_render_annotations = is_render_annotations if is_render_annotations is not None else settings.default_camera_render_flags['annotation']
@@ -51,6 +55,26 @@ class CameraSensorConfig:
     def position(self, position: Float3) -> None:
         """Set the position of the camera sensor (x, y, z)."""
         self._position = position
+
+    @property
+    def direction(self) -> Float3:
+        """Get the direction of the camera sensor (x, y, z)."""
+        return self._direction
+
+    @direction.setter
+    def direction(self, direction: Float3) -> None:
+        """Set the forward direction of the camera sensor (x, y, z)."""
+        self._direction = direction
+
+    @property
+    def up_vector(self) -> Float3:
+        """Get the up_vector of the camera sensor (x, y, z)."""
+        return self._up_vector
+
+    @up_vector.setter
+    def up_vector(self, up_vector: Float3) -> None:
+        """Set the forward up_vector of the camera sensor (x, y, z)."""
+        self._up_vector = up_vector
 
     @property
     def resolution(self) -> Int2:
@@ -117,6 +141,8 @@ class CameraSensorConfig:
         return {
             'name': self._name,
             'position': self._position,
+            'direction': self._direction,
+            'up_vector': self._up_vector,
             'resolution': self._resolution,
             'is_render_colours': self._is_render_colours,
             'is_render_annotations': self._is_render_annotations,
@@ -129,6 +155,8 @@ class CameraSensorConfig:
         """Load a camera sensor configuration from a dictionary."""
         self._name = config_dict['name']
         self._position = config_dict['position']
+        self._direction = config_dict['direction']
+        self._up_vector = config_dict['up_vector']
         self._resolution = config_dict['resolution']
         self._is_render_colours = config_dict['is_render_colours']
         self._is_render_annotations = config_dict['is_render_annotations']
@@ -146,6 +174,8 @@ class CameraSensorConfig:
         camera_metadata = {
             'name': self.name,
             'position': self.position,
+            'direction': self.direction,
+            'up_vector': self.up_vector,
             'resolution': self.resolution,
             'fov_y': self.fov_y,
             'near_far_planes': self.near_far_planes

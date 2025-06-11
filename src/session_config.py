@@ -174,7 +174,11 @@ class SessionConfig:
         self._map = config_dict['map']
         self._vehicle = VehicleConfig()
         self._vehicle.from_dict(config_dict['vehicle'])
-        self._cameras = [CameraSensorConfig().from_dict(camera) for camera in config_dict['cameras']]
+        self._cameras = []
+        for camera_dict in config_dict['cameras']:
+            cam = CameraSensorConfig()
+            cam.from_dict(camera_dict)
+            self._cameras.append(cam)
         self._weather = config_dict['weather']
         self._time = config_dict['time']
         self._num_ai_traffic_vehicles = config_dict['num_ai_traffic_vehicles']

@@ -83,6 +83,8 @@ default_camera_render_flags: Dict[str, bool] = {
     'depth': True
     }
 default_camera_position: Float3 = (0, -0.5, 1.5)
+default_camera_direction: Float3 = (0, -1, 0)
+default_camera_up_vector: Float3 = (0, 0, 1)
 default_camera_fov_y: int = 70
 default_camera_near_far_planes: tuple = (0.1, 1000.0)
 

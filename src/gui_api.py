@@ -76,12 +76,6 @@ class Button(GuiWidget):
 class Checkbox(GuiWidget):
     """Checkbox widget interface."""
 
-class RadioOption:
-    """Strict definition for radio button options."""
-    def __init__(self, label: str, value: str):
-        self.label = label
-        self.value = value
-
 # --- API Interface ---
 class GuiApi(ABC):
     @abstractmethod
@@ -332,4 +326,9 @@ class GuiApi(ABC):
     @abstractmethod
     def show_warning_message(self, message: str) -> None:
         """Show a warning message to the user."""
+        raise NotImplementedError()
+
+    @abstractmethod
+    def focus_on(self, widget: 'GuiWidget') -> None:
+        """Set focus to the given widget if possible."""
         raise NotImplementedError()

@@ -20,16 +20,6 @@ if session is None:
 # Set random seed for reproducibility
 utils.set_random_seed(settings.random_seed)
 
-try:
-    # Create the session configuration
-    session = session_config.create_session_config()
-    # Validate the session configuration
-    session.validate()
-except ValueError as e:
-    # Log and show error in one call, then quit
-    utils.log_and_show_error(f'Value error creating session configuration, aborting capture session: {e}')
-    exit(1)
-
 # Refresh the available weather presets
 scenario_mgr.get_weather_presets()
 
@@ -71,10 +61,12 @@ sensor_imu = data_capture_mgr.create_imu_sensor(bng,
                                                 'sensor_imu')
 
 try:
-    # Send vehicle to random waypoint in the scenario to start the capture session
-    scenario_mgr.teleport_vehicle_to_random_waypoint(bng,
-                                                     scenario,
-                                                     ego)
+    # If a starting waypoint was assigned, teleport vehicle to it
+    if (session.starting_waypoint):
+        scenario_mgr.teleport_vehicle_to_waypoint(bng,
+                                                  scenario,
+                                                  ego,
+                                                  session.starting_waypoint)
 
     # Set up session parameters
     session_length_s = session.duration_s

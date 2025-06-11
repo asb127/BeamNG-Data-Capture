@@ -1,6 +1,6 @@
 import json, os, random, re, zipfile
 from datetime import datetime
-from type_defs import Quat, List
+from type_defs import Float3, Quat, List
 from scipy.spatial.transform import Rotation as R
 
 import gui_mgr, logging_mgr
@@ -84,11 +84,17 @@ def create_frame_output_dir(output_dir: str, i: int) -> str:
     return create_dir(output_dir, f'frame_{i}')
 
 # --- Math Utilities ---
-def euler_to_quaternion(roll: float, pitch: float, yaw: float, degrees: bool = True) -> Quat:
+def euler_to_quaternion(rpy: Float3, degrees: bool = True) -> Quat:
     """Convert Euler angles to a quaternion (qx, qy, qz, qw). Assumes input is in degrees unless degrees=False."""
-    r = R.from_euler('xyz', [roll, pitch, yaw], degrees=degrees)
+    r = R.from_euler('xyz', rpy, degrees=degrees)
     qx, qy, qz, qw = r.as_quat()
-    return Quat(qx, qy, qz, qw)
+    return (qx, qy, qz, qw)
+
+def quaternion_to_euler(quat: Quat, degrees: bool = True) -> Float3:
+    """Convert a quaternion (qx, qy, qz, qw) to Euler angles (roll, pitch, yaw). Returns angles in degrees unless degrees=False."""
+    r = R.from_quat(quat)
+    roll, pitch, yaw = r.as_euler('xyz', degrees=degrees)
+    return (roll, pitch, yaw)
 
 # --- Random Utilities ---
 def set_random_seed(seed: int) -> None:
@@ -146,12 +152,16 @@ def create_child_dict(parent_dict:dict, key: str) -> dict:
         logging_mgr.log_action(f'Child dictionary created with key "{key}".')
     return child_dict
 
-def tuple_from_str(s: str, type_cast, expected_len: int, sep: str = ",") -> tuple:
+def str_to_tuple(s: str, type_cast, expected_len: int, sep: str = ",") -> tuple:
     """Split a string (e.g. "1, 2, 3") into a tuple of type_casted values. Raises ValueError if the number of elements does not match expected_len."""
     parts = [type_cast(x.strip()) for x in s.split(sep)]
     if len(parts) != expected_len:
         raise ValueError(f"Expected {expected_len} values, got {len(parts)}: '{s}'")
     return tuple(parts)
+
+def tuple_to_str(t: tuple, fmt: str = "{:.1f}", sep: str = ", ") -> str:
+    """Format a tuple as a comma-separated string with the given format for each element."""
+    return sep.join(fmt.format(x) for x in t)
 
 # --- JSON/ZIP Utilities ---
 def save_json_file(data: dict, output_dir: str, filename: str) -> None:
