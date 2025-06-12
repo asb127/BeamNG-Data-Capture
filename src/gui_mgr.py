@@ -8,7 +8,7 @@ from vehicle_config import VehicleConfig
 _gui_api = None
 
 _window_size = (700, 800)
-_camera_subwindow_size = (350, 500)
+_camera_subwindow_size = (400, 450)
 
 _header_font = ("Arial", 10)
 _label_font = ("Arial", 8)
@@ -37,165 +37,173 @@ def get_session_config():
                                        padx=10,
                                        pady=10)
 
-    # --- Session Source (one column, rows 0-1) ---
+    # --- Session Source (one column, rows 0-3) ---
     session_source_rg = _gui_api.add_radio_group(grid,
-                                                 "Session Source:",
                                                  row=0,
                                                  column=0,
-                                                 columnspan=1)
+                                                 columnspan=4)
+    _gui_api.add_label(grid,
+                       "Session Source",
+                       font=_header_font,
+                       row=0,
+                       column=0,
+                       columnspan=4,
+                       fill=True)
     load_session_rb = _gui_api.add_radio_button(grid,
                                                 "Load session config from file",
                                                 variable=session_source_rg.variable,
                                                 value="load",
                                                 group=session_source_rg,
-                                                row=0,
+                                                row=1,
                                                 column=0,
                                                 columnspan=1)
     config_path_input = _gui_api.add_file_input(grid,
-                                                "Session config file:",
+                                                "",
                                                 row=1,
-                                                column=0,
+                                                column=1,
                                                 columnspan=2)
     create_session_rb = _gui_api.add_radio_button(grid,
                                                   "Create new session config",
                                                   variable=session_source_rg.variable,
                                                   value="new",
                                                   group=session_source_rg,
-                                                  row=0,
-                                                  column=1,
+                                                  row=2,
+                                                  column=0,
                                                   columnspan=1)
     session_source_rg.set_buttons([load_session_rb, create_session_rb])
 
-    # --- Session Config Fields (double columns, rows 2-7) ---
+    # --- Session Config Fields (double columns, rows 3-8) ---
     _gui_api.add_label(grid,
                        "Session Configuration",
                        font=_header_font,
                        pady=8,
-                       row=2,
+                       row=3,
                        column=0,
-                       columnspan=4)
+                       columnspan=4,
+                       fill=True)
     # Row 1: Scenario | Map
     _gui_api.add_label(grid,
-                       "Scenario:",
+                       "Scenario name:",
                        font=_label_font,
-                       row=3,
+                       row=4,
                        column=0)
     scenario_input = _gui_api.add_str_input(grid,
                                             default=settings.default_scenario,
-                                            row=3,
+                                            row=4,
                                             column=1)
     _gui_api.add_label(grid,
                        "Map:",
                        font=_label_font,
-                       row=3,
+                       row=4,
                        column=2)
     map_input = _gui_api.add_str_input(grid,
                                        default=settings.default_map,
-                                       row=3,
+                                       row=4,
                                        column=3)
     # Row 2: Duration | Capture Frequency
     _gui_api.add_label(grid,
                        "Duration (s):",
                        font=_label_font,
-                       row=4,
+                       row=5,
                        column=0)
     duration_input = _gui_api.add_int_input(grid,
                                             default=settings.default_duration_s,
-                                            row=4,
+                                            row=5,
                                             column=1)
     _gui_api.add_label(grid,
-                       "Capture Freq (Hz):",
+                       "Capture Frequency (Hz):",
                        font=_label_font,
-                       row=4,
+                       row=5,
                        column=2)
     freq_input = _gui_api.add_float_input(grid,
                                           default=settings.default_capture_freq_hz,
-                                          row=4,
+                                          row=5,
                                           column=3)
     # Row 3: Weather | Start time
     _gui_api.add_label(grid,
                        "Weather:",
                        font=_label_font,
-                       row=5,
+                       row=6,
                        column=0)
     weather_input = _gui_api.add_str_input(grid,
                                            default=settings.default_weather,
-                                           row=5,
+                                           row=6,
                                            column=1)
     _gui_api.add_label(grid,
                        "Start Time (HH:mm:ss):",
                        font=_label_font,
-                       row=5,
+                       row=6,
                        column=2)
     time_input = _gui_api.add_str_input(grid,
                                         default=settings.time_of_day_start,
-                                        row=5,
+                                        row=6,
                                         column=3)
     # Row 4: AI Traffic Vehicles | Starting Waypoint
     _gui_api.add_label(grid,
                        "AI Traffic Vehicles:",
                        font=_label_font,
-                       row=6,
+                       row=7,
                        column=0)
     num_ai_input = _gui_api.add_int_input(grid,
                                           default=settings.default_num_ai_traffic_vehicles,
-                                          row=6,
+                                          row=7,
                                           column=1)
     _gui_api.add_label(grid,
                        "Starting Waypoint:",
                        font=_label_font,
-                       row=6,
+                       row=7,
                        column=2)
     starting_waypoint_input = _gui_api.add_str_input(grid,
                                                      default="",
-                                                     row=6,
+                                                     row=7,
                                                      column=3)
 
-    # --- Vehicle Config Fields (double columns, rows 8-12) ---
+    # --- Vehicle Config Fields (double columns, rows 9-13) ---
     _gui_api.add_label(grid,
                        "Vehicle Configuration",
                        font=_header_font,
                        pady=8,
-                       row=8,
+                       row=9,
                        column=0,
-                       columnspan=4)
+                       columnspan=4,
+                       fill=True)
     # First column
     _gui_api.add_label(grid,
                        "Vehicle Name:",
                        font=_label_font,
-                       row=9,
+                       row=10,
                        column=0)
     vehicle_name_input = _gui_api.add_str_input(grid,
                                                 default=settings.default_vehicle_name,
-                                                row=9,
+                                                row=10,
                                                 column=1)
     _gui_api.add_label(grid,
                        "Initial Position (m) (x, y, z):",
                        font=_label_font,
-                       row=10,
+                       row=11,
                        column=0)
     vehicle_pos_input = _gui_api.add_str_input(grid,
                                                default=utils.tuple_to_str(settings.default_vehicle_initial_position),
-                                               row=10,
+                                               row=11,
                                                column=1)
     # Second column
     _gui_api.add_label(grid,
                        "Vehicle Model:",
                        font=_label_font,
-                       row=9,
+                       row=10,
                        column=2)
     vehicle_model_input = _gui_api.add_str_input(grid,
                                                  default=settings.default_vehicle_model,
-                                                 row=9,
+                                                 row=10,
                                                  column=3)
     _gui_api.add_label(grid,
                        "Initial Rotation (deg) (roll, pitch, yaw):",
                        font=_label_font,
-                       row=10,
+                       row=11,
                        column=2)
     vehicle_rot_input = _gui_api.add_str_input(grid,
                                                default=utils.tuple_to_str(utils.quaternion_to_euler(settings.default_vehicle_initial_rotation)),
-                                               row=10,
+                                               row=11,
                                                column=3)
 
     # --- Camera Config Section ---
@@ -203,14 +211,15 @@ def get_session_config():
                        "Camera Sensor Configurations",
                        font=_header_font,
                        pady=8,
-                       row=12,
+                       row=13,
                        column=0,
-                       columnspan=4)
+                       columnspan=4,
+                       fill=True)
     camera_widgets = []
     cameras_section = []
 
     # Track the first row available for camera configs (after all previous widgets)
-    camera_start_row = 13
+    camera_start_row = 14
 
     session = None
 
@@ -295,27 +304,30 @@ def get_session_config():
                                 "Add Camera",
                                 on_add_camera,
                                 side="left",
-                                padx=15,
-                                pady=15,
+                                padx=10,
+                                pady=10,
                                 row=last_row,
-                                column=0)
+                                column=0,
+                                fill=True)
         # Always show Start/Exit
         _gui_api.add_button(grid,
                             "Start Capture",
                             on_start,
                             side="left",
-                            padx=15,
-                            pady=15,
+                            padx=10,
+                            pady=10,
                             row=last_row,
-                            column=2)
+                            column=2,
+                            fill=True)
         _gui_api.add_button(grid,
                             "Exit",
                             on_exit,
                             side="right",
-                            padx=20,
-                            pady=20,
+                            padx=10,
+                            pady=10,
                             row=last_row,
-                            column=3)
+                            column=3,
+                            fill=True)
 
     def refresh_camera_list():
         # Remove previous camera rows
@@ -333,7 +345,7 @@ def get_session_config():
             del camera_widgets[max_camera_rows:]
 
         if not camera_widgets:
-            label = _gui_api.add_label(grid, "No cameras added", font=_label_font, row=start_row, column=0, columnspan=4)
+            label = _gui_api.add_label(grid, "(No cameras added)", font=_label_font, row=start_row, column=0, columnspan=4, fill=True)
             cameras_section.append([label])
         else:
             for idx, (name_widget, pos_widget, dir_widget, upv_widget, res_widget, fov_widget, nearfar_widget, col_widget, ann_widget, dep_widget) in enumerate(camera_widgets):
@@ -399,8 +411,8 @@ def get_session_config():
                         logging_mgr.log_action(f"Removed camera config at index {idx} from GUI.")
                         refresh_camera_list()
                     return remove_camera
-                edit_btn = _gui_api.add_button(grid, "Edit", make_edit(idx), side="left", padx=2, pady=2, row=start_row+idx, column=1)
-                remove_btn = _gui_api.add_button(grid, "Remove", make_remove(idx), side="left", padx=2, pady=2, row=start_row+idx, column=2)
+                edit_btn = _gui_api.add_button(grid, "Edit", make_edit(idx), side="left", padx=2, pady=2, row=start_row+idx, column=1, fill=True)
+                remove_btn = _gui_api.add_button(grid, "Remove", make_remove(idx), side="left", padx=2, pady=2, row=start_row+idx, column=2, fill=True)
                 row_widgets.extend([edit_btn, remove_btn])
                 cameras_section.append(row_widgets)
         # Always place the final buttons at the last row of the grid (bottom of window)
@@ -411,26 +423,29 @@ def get_session_config():
         Helper to create camera input widgets for add/edit.
         Returns tuple of widgets in the same order.
         """
-        _gui_api.add_label(parent, "Camera Name:", row=0, column=0)
-        name_widget = _gui_api.add_str_input(parent, default=cam.name, row=0, column=1)
-        _gui_api.add_label(parent, "Position (x, y, z):", row=1, column=0)
-        pos_widget = _gui_api.add_str_input(parent, default=utils.tuple_to_str(cam.position), row=1, column=1)
-        _gui_api.add_label(parent, "Direction (x, y, z):", row=2, column=0)
-        dir_widget = _gui_api.add_str_input(parent, default=utils.tuple_to_str(getattr(cam, "direction", (0,0,1))), row=2, column=1)
-        _gui_api.add_label(parent, "Up Vector (x, y, z):", row=3, column=0)
-        upv_widget = _gui_api.add_str_input(parent, default=utils.tuple_to_str(getattr(cam, "up_vector", (0,1,0))), row=3, column=1)
-        _gui_api.add_label(parent, "Resolution (w, h):", row=4, column=0)
-        res_widget = _gui_api.add_str_input(parent, default=utils.tuple_to_str(cam.resolution, "{}"), row=4, column=1)
-        _gui_api.add_label(parent, "FOV Y:", row=5, column=0)
-        fov_widget = _gui_api.add_int_input(parent, default=cam.fov_y, row=5, column=1)
-        _gui_api.add_label(parent, "Near/Far Planes:", row=6, column=0)
-        nearfar_widget = _gui_api.add_str_input(parent, default=utils.tuple_to_str(cam.near_far_planes), row=6, column=1)
-        _gui_api.add_label(parent, "Render Colours", row=7, column=0)
-        col_widget = _gui_api.add_checkbox(parent, default=cam.is_render_colours, row=7, column=1)
-        _gui_api.add_label(parent, "Render Annotations", row=8, column=0)
-        ann_widget = _gui_api.add_checkbox(parent, default=cam.is_render_annotations, row=8, column=1)
-        _gui_api.add_label(parent, "Render Depth", row=9, column=0)
-        dep_widget = _gui_api.add_checkbox(parent, default=cam.is_render_depth, row=9, column=1)
+        grid = _gui_api.add_grid_container(parent, num_rows=10, num_columns=2,
+                                           row_weights=[0]*10, column_weights=[1, 2],
+                                           padx=20, pady=20)
+        _gui_api.add_label(grid, "Camera Name:", row=0, column=0, padx=20, pady=5)
+        name_widget = _gui_api.add_str_input(grid, default=cam.name, row=0, column=1, padx=20, pady=5)
+        _gui_api.add_label(grid, "Position (m) (x, y, z):", row=1, column=0, padx=20, pady=5)
+        pos_widget = _gui_api.add_str_input(grid, default=utils.tuple_to_str(cam.position), row=1, column=1, padx=20, pady=5)
+        _gui_api.add_label(grid, "Direction (x, y, z):", row=2, column=0, padx=20, pady=5)
+        dir_widget = _gui_api.add_str_input(grid, default=utils.tuple_to_str(getattr(cam, "direction", (0,0,1))), row=2, column=1, padx=20, pady=5)
+        _gui_api.add_label(grid, "Up Vector (x, y, z):", row=3, column=0, padx=20, pady=5)
+        upv_widget = _gui_api.add_str_input(grid, default=utils.tuple_to_str(getattr(cam, "up_vector", (0,1,0))), row=3, column=1, padx=20, pady=5)
+        _gui_api.add_label(grid, "Resolution (px) (w, h):", row=4, column=0, padx=20, pady=5)
+        res_widget = _gui_api.add_str_input(grid, default=utils.tuple_to_str(cam.resolution, "{}"), row=4, column=1, padx=20, pady=5)
+        _gui_api.add_label(grid, "FOV Y (deg):", row=5, column=0, padx=20, pady=5)
+        fov_widget = _gui_api.add_int_input(grid, default=cam.fov_y, row=5, column=1, padx=20, pady=5)
+        _gui_api.add_label(grid, "Near/Far Planes (m):", row=6, column=0, padx=20, pady=5)
+        nearfar_widget = _gui_api.add_str_input(grid, default=utils.tuple_to_str(cam.near_far_planes), row=6, column=1, padx=20, pady=5)
+        _gui_api.add_label(grid, "Render Colours:", row=7, column=0, padx=20, pady=5)
+        col_widget = _gui_api.add_checkbox(grid, default=cam.is_render_colours, row=7, column=1, padx=20, pady=5)
+        _gui_api.add_label(grid, "Render Annotations:", row=8, column=0, padx=20, pady=5)
+        ann_widget = _gui_api.add_checkbox(grid, default=cam.is_render_annotations, row=8, column=1, padx=20, pady=5)
+        _gui_api.add_label(grid, "Render Depth:", row=9, column=0, padx=20, pady=5)
+        dep_widget = _gui_api.add_checkbox(grid, default=cam.is_render_depth, row=9, column=1, padx=20, pady=5)
         return (name_widget, pos_widget, dir_widget, upv_widget, res_widget, fov_widget, nearfar_widget, col_widget, ann_widget, dep_widget)
 
     def add_camera_row():
@@ -471,8 +486,8 @@ def get_session_config():
         def on_cancel_camera():
             _gui_api.close_subwindow(cam_win)
 
-        _gui_api.add_button(cam_win, "Save Camera", on_save_camera, side="left", padx=10, pady=10)
-        _gui_api.add_button(cam_win, "Cancel", on_cancel_camera, side="right", padx=10, pady=10)
+        _gui_api.add_button(cam_win, "Save Camera", on_save_camera, side="left", padx=20, pady=20, ipadx=20, ipady=10)
+        _gui_api.add_button(cam_win, "Cancel", on_cancel_camera, side="right", padx=20, pady=20, ipadx=20, ipady=10)
         _gui_api.focus_on(name_widget)
         _gui_api.wait_window(cam_win)
 

@@ -78,7 +78,6 @@ class TkRadioGroup(RadioGroup):
         """Add a radio button to the group."""
         self.buttons.append(button)
         button.widget.config(variable=self.variable)
-        button.widget.pack(anchor="w", in_=self.frame)
 
     def set_buttons(self, buttons: List[TkRadioButton]) -> None:
         """Set the list of radio buttons for this group, first is default."""
@@ -211,22 +210,22 @@ class TkinterGuiApi(GuiApi):
     GUI elements for session configuration and user interaction.
     """
 
-    def add_label(self, parent, text, font=None, *, row=None, column=None, rowspan=1, columnspan=1, padx=0, pady=0, ipadx=0, ipady=0):
+    def add_label(self, parent, text, font=None, *, row=None, column=None, rowspan=1, columnspan=1, padx=0, pady=0, ipadx=0, ipady=0, fill=False):
         label = tk.Label(parent.get(), text=text, font=font)
         if isinstance(parent, TkGridContainer) and row is not None and column is not None:
-            label.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, sticky="nsew",
+            sticky = "nsew" if fill else "w"
+            label.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, sticky=sticky,
                        padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
         else:
-            label.pack(padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
+            label.pack(anchor="w", padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
         return TkLabel(label)
 
-    def add_radio_group(self, parent, label, *, row=None, column=None, rowspan=1, columnspan=1):
+    def add_radio_group(self, parent, *, row=None, column=None, rowspan=1, columnspan=1, padx=0, pady=0, ipadx=0, ipady=0):
         group_frame = tk.Frame(parent.get())
         if isinstance(parent, TkGridContainer) and row is not None and column is not None:
             group_frame.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, sticky="nsew")
         else:
             group_frame.pack(anchor="w", padx=20)
-        tk.Label(group_frame, text=label).pack(anchor="w")
         group = TkRadioGroup(group_frame)
         return group
 
@@ -263,7 +262,7 @@ class TkinterGuiApi(GuiApi):
                              padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
             return TkIntInput(var, entry_widget)
         else:
-            entry_widget.pack(anchor="w", padx=20)
+            entry_widget.pack(anchor="w", padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
             return TkIntInput(var, entry_widget)
 
     def add_float_input(self, parent, default=0.0, *,
@@ -276,7 +275,7 @@ class TkinterGuiApi(GuiApi):
                              padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
             return TkFloatInput(var, entry_widget)
         else:
-            entry_widget.pack(anchor="w", padx=20)
+            entry_widget.pack(anchor="w", padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
             return TkFloatInput(var, entry_widget)
 
     def add_str_input(self, parent, default="", *,
@@ -289,24 +288,28 @@ class TkinterGuiApi(GuiApi):
                              padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
             return TkStrInput(var, entry_widget)
         else:
-            entry_widget.pack(anchor="w", padx=20)
+            entry_widget.pack(anchor="w", padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
             return TkStrInput(var, entry_widget)
 
-    def add_button(self, parent, text, command, side="left", padx=0, pady=0, *, row=None, column=None, rowspan=1, columnspan=1):
+    def add_button(self, parent, text, command, side="left", *, row=None, column=None, rowspan=1, columnspan=1, padx=0, pady=0, ipadx=0, ipady=0, fill=False):
         btn = tk.Button(parent.get(), text=text, command=command)
         if isinstance(parent, TkGridContainer) and row is not None and column is not None:
-            btn.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, sticky="nsew", padx=padx, pady=pady)
+            sticky = "nsew" if fill else "w"
+            btn.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, sticky=sticky,
+                     padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
         else:
-            btn.pack(side=side, padx=padx, pady=pady)
+            btn.pack(anchor="w", side=side, padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
         return TkButton(btn)
 
-    def add_checkbox(self, parent, default=False, *, row=None, column=None, rowspan=1, columnspan=1):
+    def add_checkbox(self, parent, default=False, *, row=None, column=None, rowspan=1, columnspan=1, padx=0, pady=0, ipadx=0, ipady=0, fill=False):
         var = tk.BooleanVar(value=default)
         cb = tk.Checkbutton(parent.get(), variable=var)
         if isinstance(parent, TkGridContainer) and row is not None and column is not None:
-            cb.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, sticky="w")
+            sticky = "nsew" if fill else "w"
+            cb.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, sticky=sticky,
+                    padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
         else:
-            cb.pack(anchor="w", padx=20)
+            cb.pack(anchor="w", padx=padx, pady=pady, ipadx=ipadx, ipady=ipady)
         return TkCheckbox(var)
 
     def create_window(self, title: str, size: Int2 = (400, 400)) -> TkWindow:

@@ -157,7 +157,8 @@ class GuiApi(ABC):
         padx: int = 0,
         pady: int = 0,
         ipadx: int = 0,
-        ipady: int = 0
+        ipady: int = 0,
+        fill: bool = False
     ) -> Label:
         """Create a Label widget in the provided window and return it."""
         raise NotImplementedError()
@@ -166,7 +167,6 @@ class GuiApi(ABC):
     def add_radio_group(
         self,
         parent: Container,
-        label: str,
         *,
         row: int = None,
         column: int = None,
@@ -294,7 +294,8 @@ class GuiApi(ABC):
         padx: int = 0,
         pady: int = 0,
         ipadx: int = 0,
-        ipady: int = 0
+        ipady: int = 0,
+        fill: bool = False
     ) -> Button:
         """Create a Button widget in the provided window and return it."""
         raise NotImplementedError()
@@ -313,7 +314,8 @@ class GuiApi(ABC):
         padx: int = 0,
         pady: int = 0,
         ipadx: int = 0,
-        ipady: int = 0
+        ipady: int = 0,
+        fill: bool = False
     ) -> Checkbox:
         """Create a Checkbox widget in the provided window and return it."""
         raise NotImplementedError()
@@ -331,4 +333,5 @@ class GuiApi(ABC):
     @abstractmethod
     def focus_on(self, widget: 'GuiWidget') -> None:
         """Set focus to the given widget if possible."""
+        raise NotImplementedError()
         raise NotImplementedError()
