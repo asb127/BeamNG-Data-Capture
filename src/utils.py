@@ -1,4 +1,4 @@
-import json, os, random, re, zipfile
+import json, math, os, random, re, zipfile
 from datetime import datetime
 from type_defs import Float3, Quat, List
 from scipy.spatial.transform import Rotation as R
@@ -95,6 +95,16 @@ def quaternion_to_euler(quat: Quat, degrees: bool = True) -> Float3:
     r = R.from_quat(quat)
     roll, pitch, yaw = r.as_euler('xyz', degrees=degrees)
     return (roll, pitch, yaw)
+
+def is_finite(x: float | int) -> bool:
+    """Return True if x is a finite float/int (not NaN or infinite)."""
+    return math.isfinite(x)
+
+def are_finite(values: list[float] | tuple[float, ...]) -> bool:
+    """
+    Return True if all elements in the tuple/list are finite (not NaN or infinite).
+    """
+    return all(is_finite(x) for x in values)
 
 # --- Random Utilities ---
 def set_random_seed(seed: int) -> None:

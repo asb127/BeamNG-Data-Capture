@@ -123,11 +123,20 @@ class TkIntInput(IntInput):
         self.var = var
         self.entry_widget = entry_widget
     def get(self) -> int:
-        """Get the integer value from the input, or None if invalid."""
+        """
+        Get the value as an integer.
+
+        Raises:
+            TypeError: If the input is empty or None.
+            ValueError: If the input cannot be cast to int.
+        """
+        value = self.var.get()
+        if value is None or str(value).strip() == "":
+            raise TypeError("Value must not be empty.")
         try:
-            return int(self.var.get())
-        except Exception:
-            return None
+            return int(str(value).strip())
+        except ValueError:
+            raise ValueError("Value must be an integer.")
     def destroy(self) -> None:
         """Destroy the entry widget if present."""
         if self.entry_widget is not None:
@@ -140,11 +149,20 @@ class TkFloatInput(FloatInput):
         self.var = var
         self.entry_widget = entry_widget
     def get(self) -> float:
-        """Get the float value from the input, or None if invalid."""
+        """
+        Get the value as a float.
+
+        Raises:
+            TypeError: If the input is empty or None.
+            ValueError: If the input cannot be cast to float.
+        """
+        value = self.var.get()
+        if value is None or str(value).strip() == "":
+            raise TypeError("Value must not be empty.")
         try:
-            return float(self.var.get())
-        except Exception:
-            return None
+            return float(str(value).strip())
+        except ValueError:
+            raise ValueError("Value must be a number.")
     def destroy(self) -> None:
         """Destroy the entry widget if present."""
         if self.entry_widget is not None:
@@ -157,7 +175,9 @@ class TkStrInput(StrInput):
         self.var = var
         self.entry_widget = entry_widget
     def get(self) -> str:
-        """Get the string value from the input."""
+        """
+        Get the value as a string.
+        """
         return self.var.get()
     def destroy(self) -> None:
         """Destroy the entry widget if present."""
@@ -371,6 +391,12 @@ class TkinterGuiApi(GuiApi):
         messagebox.showwarning("Warning", message)
 
     def focus_on(self, widget: GuiWidget):
+        """Set focus to the given widget if possible."""
+        tk_widget = getattr(widget, 'entry_widget', None)
+        if tk_widget is None:
+            tk_widget = getattr(widget, 'widget', None)
+        if tk_widget is not None and hasattr(tk_widget, 'focus_set'):
+            tk_widget.focus_set()
         """Set focus to the given widget if possible."""
         tk_widget = getattr(widget, 'entry_widget', None)
         if tk_widget is None:

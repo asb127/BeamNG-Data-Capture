@@ -1,4 +1,5 @@
 from type_defs import Float3, Int2, StrDict, TypedDict
+import utils
 
 class CameraSensorConfigDict(TypedDict):
     name: str
@@ -182,7 +183,32 @@ class CameraSensorConfig:
         }
         return camera_metadata
     
-    def validate(self) -> None:
-        """Validate the camera sensor configuration."""
-        # Currently no validation is performed
-        pass
+    def validate(self):
+        """Raise ValueError if any field is invalid."""
+        # Check if all required fields are set and valid in size, type and range
+        if not self.name or not isinstance(self.name, str):
+            raise ValueError("Camera name must be a non-empty string.")
+        if not isinstance(self.position, tuple) or len(self.position) != 3 or not utils.are_finite(self.position):
+            raise ValueError("Camera position must be a tuple of 3 finite numbers.")
+        if not isinstance(self.direction, tuple) or len(self.direction) != 3 or not utils.are_finite(self.direction):
+            raise ValueError("Camera direction must be a tuple of 3 finite numbers.")
+        if not isinstance(self.up_vector, tuple) or len(self.up_vector) != 3 or not utils.are_finite(self.up_vector):
+            raise ValueError("Camera up_vector must be a tuple of 3 finite numbers.")
+        if not isinstance(self.resolution, tuple) or len(self.resolution) != 2 or not utils.are_finite(self.resolution):
+            raise ValueError("Camera resolution must be a tuple of 2 finite numbers.")
+        if any(x < 0 for x in self.resolution):
+            raise ValueError("Camera resolution values must be non-negative.")
+        if not isinstance(self.fov_y, int) or not utils.is_finite(self.fov_y) or not (10 <= self.fov_y <= 170):
+            raise ValueError("Camera FOV Y must be a finite integer between 10 and 170.")
+        if not isinstance(self.near_far_planes, tuple) or len(self.near_far_planes) != 2 or not utils.are_finite(self.near_far_planes):
+            raise ValueError("Camera near/far planes must be a tuple of 2 finite numbers.")
+        if not isinstance(self.is_render_colours, bool):
+            raise ValueError("is_render_colours must be a boolean.")
+        if not isinstance(self.is_render_annotations, bool):
+            raise ValueError("is_render_annotations must be a boolean.")
+        if not isinstance(self.is_render_depth, bool):
+            raise ValueError("is_render_depth must be a boolean.")
+        # Check that the near plane is less than the far plane
+        near, far = self.near_far_planes
+        if far <= near:
+            raise ValueError("Far plane value must be greater than near plane.")

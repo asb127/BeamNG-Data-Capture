@@ -1,6 +1,5 @@
+import logging_mgr, utils
 from type_defs import Float3, Quat, TypedDict
-
-import logging_mgr
 
 class VehicleConfigDict(TypedDict):
     name: str
@@ -102,13 +101,22 @@ class VehicleConfig:
         self._initial_position = config_dict['initial_position']
         self._initial_rotation = config_dict['initial_rotation']
 
-    def validate(self) -> None:
-        """Validate the vehicle configuration. Same restrictions as setters."""
-        import settings 
-
-        # Validate the vehicle name
-        if not self._name:
-            raise ValueError('Vehicle name cannot be empty.')
-        # Validate the vehicle model
-        if not self._model or self._model not in settings.supported_models:
-            raise ValueError(f'Vehicle model "{self._model}" is not supported.')
+    def validate(self):
+        """Raise ValueError if any field is invalid."""
+        # Check if all required fields are set and valid in size, type
+        if not self.name or not isinstance(self.name, str):
+            raise ValueError("Vehicle name must be a non-empty string.")
+        if not self.model or not isinstance(self.model, str):
+            raise ValueError("Vehicle model  must be a non-empty string.")
+        if not isinstance(self.initial_position, tuple) or len(self.initial_position) != 3:
+            raise ValueError("Initial position must be a tuple of 3 numbers.")
+        if not isinstance(self.initial_rotation, tuple) or len(self.initial_rotation) != 4:
+            raise ValueError("Initial rotation must be a tuple of 4 numbers (quaternion).")
+        # Check if all required fields are finite numbers (where applicable)
+        if not utils.are_finite(self.initial_position):
+            raise ValueError("Initial position values must be finite numbers.")
+        if not utils.are_finite(self.initial_rotation):
+            raise ValueError("Initial rotation values must be finite numbers.")
+        # Check if the model is supported
+        if not self.model in utils.get_supported_vehicle_models():
+            raise ValueError(f"Vehicle model '{self.model}' is not supported.")

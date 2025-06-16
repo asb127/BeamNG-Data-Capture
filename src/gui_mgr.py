@@ -223,6 +223,67 @@ def get_session_config():
 
     session = None
 
+    def validate_session_fields():
+        """
+        Validates all main session fields. Returns True if succesful, false otherwise.
+
+        Raises:
+            ValueError: if any field is invalid.
+            TypeError: if any field has the wrong type.
+        """
+        # Scenario and map must not be empty
+        if not scenario_input.get().strip():
+            raise ValueError("Scenario name cannot be empty.")
+        if not map_input.get().strip():
+            raise ValueError("Map cannot be empty.")
+        # Duration must be a positive integer
+        try:
+            duration = duration_input.get()
+        except TypeError as te:
+            raise TypeError(f"Duration: {te}")
+        except ValueError as ve:
+            raise ValueError(f"Duration: {ve}")
+        if duration <= 0:
+            raise ValueError("Duration must be a positive integer.")
+        # Frequency must be positive float
+        try:
+            freq = freq_input.get()
+        except TypeError as te:
+            raise TypeError(f"Capture frequency: {te}")
+        except ValueError as ve:
+            raise ValueError(f"Capture frequency: {ve}")
+        if freq <= 0:
+            raise ValueError("Capture frequency must be a positive number.")
+        # Weather and time can be empty, but if time is not empty, it must be valid
+        t = time_input.get().strip()
+        if t and not utils.is_hhmmss_time_string(t):
+            raise ValueError("Start Time must be in HH:mm:ss format.")
+        # Vehicle name & model must not be empty
+        if not vehicle_name_input.get().strip():
+            raise ValueError("Vehicle name cannot be empty.")
+        if not vehicle_model_input.get().strip():
+            raise ValueError("Vehicle model cannot be empty.")
+        # Initial vehicle position & rotation must be valid Float 3 tuples
+        try:
+            utils.str_to_tuple(vehicle_pos_input.get(), float, 3)
+        except ValueError:
+            raise TypeError("Vehicle initial position must be three comma-separated numbers.")
+        try:
+            utils.str_to_tuple(vehicle_rot_input.get(), float, 3)
+        except ValueError:
+            raise TypeError("Vehicle initial rotation must be three comma-separated numbers.")
+        # AI traffic vehicles value must be a non-negative integer
+        try:
+            n_ai = num_ai_input.get()
+        except TypeError as te:
+            raise TypeError(f"AI Traffic Vehicles: {te}")
+        except ValueError as ve:
+            raise ValueError(f"AI Traffic Vehicles: {ve}")
+        if n_ai < 0:
+            raise ValueError("AI Traffic Vehicles must be zero or positive.")
+        # No need to check starting waypoint since it can be empty
+        return True
+
     def on_start():
         nonlocal session
         mode = session_source_rg.get()
@@ -235,6 +296,12 @@ def get_session_config():
             logging_mgr.log_action(f"Loaded session config from file: {file_path}")
         else:
             try:
+                validate_session_fields()
+            except (ValueError, TypeError) as err:
+                show_warning_message(str(err))
+                logging_mgr.log_action(f"Validation failed: {err}")
+                return
+            try:
                 vehicle_pos = utils.str_to_tuple(vehicle_pos_input.get(), float, 3)
                 vehicle_rot = utils.euler_to_quaternion(utils.str_to_tuple(vehicle_rot_input.get(), float, 3))
                 vehicle = VehicleConfig(
@@ -243,25 +310,31 @@ def get_session_config():
                     initial_position=vehicle_pos,
                     initial_rotation=vehicle_rot
                 )
+                vehicle.validate()
                 cameras = []
                 for (name_widget, pos_widget, dir_widget, upv_widget, res_widget, fov_widget, nearfar_widget, col_widget, ann_widget, dep_widget) in camera_widgets:
-                    cam_pos = utils.str_to_tuple(pos_widget.get(), float, 3)
-                    cam_dir = utils.str_to_tuple(dir_widget.get(), float, 3)
-                    cam_upv = utils.str_to_tuple(upv_widget.get(), float, 3)
-                    cam_res = utils.str_to_tuple(res_widget.get(), int, 2)
-                    cam_nf = utils.str_to_tuple(nearfar_widget.get(), float, 2)
-                    cam = CameraSensorConfig(
-                        name=name_widget.get(),
-                        position=cam_pos,
-                        direction=cam_dir,
-                        up_vector=cam_upv,
-                        resolution=cam_res,
-                        fov_y=int(fov_widget.get()),
-                        near_far_planes=cam_nf,
-                        is_render_colours=col_widget.get(),
-                        is_render_annotations=ann_widget.get(),
-                        is_render_depth=dep_widget.get()
-                    )
+                    try:
+                        cam_pos = utils.str_to_tuple(pos_widget.get(), float, 3)
+                        cam_dir = utils.str_to_tuple(dir_widget.get(), float, 3)
+                        cam_upv = utils.str_to_tuple(upv_widget.get(), float, 3)
+                        cam_res = utils.str_to_tuple(res_widget.get(), int, 2)
+                        cam_nf = utils.str_to_tuple(nearfar_widget.get(), float, 2)
+                        cam = CameraSensorConfig(
+                            name=name_widget.get(),
+                            position=cam_pos,
+                            direction=cam_dir,
+                            up_vector=cam_upv,
+                            resolution=cam_res,
+                            fov_y=int(fov_widget.get()),
+                            near_far_planes=cam_nf,
+                            is_render_colours=col_widget.get(),
+                            is_render_annotations=ann_widget.get(),
+                            is_render_depth=dep_widget.get()
+                        )
+                        cam.validate()
+                    except ValueError as ve:
+                        show_warning_message(f"Invalid camera config: {ve}")
+                        return
                     cameras.append(cam)
                 session = session_config.SessionConfig(
                     scenario=scenario_input.get(),
@@ -280,6 +353,11 @@ def get_session_config():
                 msg = f"Invalid input in session config: {ve}"
                 show_warning_message(msg)
                 logging_mgr.log_action(msg)
+                return
+            except Exception as ex:
+                # Only catch generic Exception as a last resort for unexpected errors.
+                show_error_message(f"Unexpected error: {ex}")
+                logging_mgr.log_error(f"Unexpected error in session config: {ex}")
                 return
         _gui_api.close_window(window)
 
@@ -514,6 +592,13 @@ def show_error_message(message: str) -> None:
     _gui_api.show_error_message(message)
 
 def show_warning_message(message: str) -> None:
+    if _gui_api is None:
+        raise RuntimeError("GUI API not set. Call set_gui_api() with an implementation before use.")
+    _gui_api.show_warning_message(message)
+def show_warning_message(message: str) -> None:
+    if _gui_api is None:
+        raise RuntimeError("GUI API not set. Call set_gui_api() with an implementation before use.")
+    _gui_api.show_warning_message(message)
     if _gui_api is None:
         raise RuntimeError("GUI API not set. Call set_gui_api() with an implementation before use.")
     _gui_api.show_warning_message(message)
