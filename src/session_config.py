@@ -201,15 +201,46 @@ class SessionConfig:
         return metadata
     
     def validate(self) -> None:
-        """Validate the session configuration."""
+        """
+        Validate the session configuration.
+
+        Raises ValueError if any field is invalid.
+        """
         try:
-            if self.duration_s <= 0:
-                raise ValueError('Duration must be a positive number.')
-            if self.capture_freq_hz <= 0:
-                raise ValueError('Capture frequency must be a positive number.')
-            if self.num_ai_traffic_vehicles < 0:
-                raise ValueError('Number of AI traffic vehicles must be a non-negative number.')
+            # Scenario and map: not empty or whitespace
+            if not self.scenario or not isinstance(self.scenario, str) or not self.scenario.strip():
+                raise ValueError('Scenario name error: must be a non-empty string.')
+            if not self.map or not isinstance(self.map, str) or not self.map.strip():
+                raise ValueError('Map name error: must be a non-empty string.')
+            # Duration and frequency: positive float
+            if self.duration_s is None or not isinstance(self.duration_s, (float, int)) or float(self.duration_s) <= 0:
+                raise ValueError('Duration error: must be a positive number.')
+            if self.capture_freq_hz is None or not isinstance(self.capture_freq_hz, (float, int)) or float(self.capture_freq_hz) <= 0:
+                raise ValueError('Capture frequency error: must be a positive number.')
+            # Time string
+            if not self.time or not utils.is_hhmmss_time_string(self.time):
+                raise ValueError('Time of day error: must be specified in the "HH:mm:ss" format.')
+            # AI traffic vehicles: non-negative int
+            if self.num_ai_traffic_vehicles is None or not isinstance(self.num_ai_traffic_vehicles, int) or self.num_ai_traffic_vehicles < 0:
+                raise ValueError('AI traffic vehicles error: must be a non-negative integer.')
+            # Starting waypoint: must be string
+            if not isinstance(self.starting_waypoint, str):
+                raise ValueError('Starting waypoint error: must be a string.')
+            # Vehicle config
             self.vehicle.validate()
+            # Cameras: at least one
+            if not self.cameras or not isinstance(self.cameras, list):
+                raise ValueError("Camera config error: at least one camera must be configured.")
+            # Camera name uniqueness (ignoring case and whitespace)
+            camera_names = [camera.name.strip().lower() for camera in self.cameras]
+            name_set = set()
+            for name in camera_names:
+                if not name:
+                    raise ValueError("Camera name error: cannot be empty or whitespace.")
+                if name in name_set:
+                    raise ValueError(f"Camera name error: duplicate camera name '{name}'. Each camera must have a unique name (case-insensitive, ignoring whitespace).")
+                name_set.add(name)
+            # Validate each camera
             for camera in self.cameras:
                 camera.validate()
         except ValueError as e:

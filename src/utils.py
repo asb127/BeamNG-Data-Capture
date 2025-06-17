@@ -1,9 +1,9 @@
 import json, math, os, random, re, zipfile
 from datetime import datetime
-from type_defs import Float3, Quat, List
 from scipy.spatial.transform import Rotation as R
 
-import gui_mgr, logging_mgr
+import logging_mgr
+from type_defs import Float3, List, Quat
 
 # --- Time/Date Utilities ---
 def get_time() -> int:
@@ -231,5 +231,12 @@ def read_json_file_inside_zip(zip_file: zipfile.ZipFile, file_path: str) -> dict
 # --- Logging/GUI Helpers ---
 def log_and_show_error(message: str) -> None:
     """Log an error and show it to the user via GUI."""
+    import gui_mgr
     logging_mgr.log_error(message)
     gui_mgr.show_error_message(message)
+
+# --- Settings Utilities ---
+def get_supported_vehicle_models() -> List[str]:
+    """Return a list of supported vehicle models."""
+    import settings
+    return settings.supported_models

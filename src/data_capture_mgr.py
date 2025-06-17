@@ -81,7 +81,7 @@ def save_all_camera_image_data(camera_list, frame_dir):
         for camera_sensor in camera_list:
             camera_dir = utils.create_dir(frame_dir, camera_sensor.name)
             futures.append(executor.submit(save_camera_image_data, camera_sensor, camera_dir))
-        # Optionally wait for all to finish (can be omitted if you want true async)
+        # Check that the data for all cameras is saved successfully
         for future in as_completed(futures):
             try:
                 future.result()

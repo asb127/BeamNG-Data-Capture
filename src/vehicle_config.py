@@ -102,21 +102,25 @@ class VehicleConfig:
         self._initial_rotation = config_dict['initial_rotation']
 
     def validate(self):
-        """Raise ValueError if any field is invalid."""
-        # Check if all required fields are set and valid in size, type
+        """
+        Validate the vehicle configuration.
+
+        Raises ValueError if any field is invalid.
+        """
+        # Check if all required fields are set and valid in size and type
         if not self.name or not isinstance(self.name, str):
-            raise ValueError("Vehicle name must be a non-empty string.")
+            raise ValueError("Vehicle name error: must be a non-empty string.")
         if not self.model or not isinstance(self.model, str):
-            raise ValueError("Vehicle model  must be a non-empty string.")
+            raise ValueError("Vehicle model error: must be a non-empty string.")
         if not isinstance(self.initial_position, tuple) or len(self.initial_position) != 3:
-            raise ValueError("Initial position must be a tuple of 3 numbers.")
+            raise ValueError("Initial position error: must be a tuple of 3 numbers.")
         if not isinstance(self.initial_rotation, tuple) or len(self.initial_rotation) != 4:
-            raise ValueError("Initial rotation must be a tuple of 4 numbers (quaternion).")
-        # Check if all required fields are finite numbers (where applicable)
+            raise ValueError("Initial rotation error: must be a tuple of 4 numbers (quaternion).")
+        # Check if the initial position and rotation fields are finite number vectors
         if not utils.are_finite(self.initial_position):
-            raise ValueError("Initial position values must be finite numbers.")
+            raise ValueError("Initial position error: values must be finite numbers.")
         if not utils.are_finite(self.initial_rotation):
-            raise ValueError("Initial rotation values must be finite numbers.")
-        # Check if the model is supported
+            raise ValueError("Initial rotation error: values must be finite numbers.")
+        # Check if the model is specified as supported in the settings
         if not self.model in utils.get_supported_vehicle_models():
-            raise ValueError(f"Vehicle model '{self.model}' is not supported.")
+            raise ValueError(f"Vehicle model error: '{self.model}' is not supported.")

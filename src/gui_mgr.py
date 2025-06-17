@@ -223,66 +223,152 @@ def get_session_config():
 
     session = None
 
-    def validate_session_fields():
+    def validate_session_fields() -> None:
         """
         Validates all main session fields. Returns True if succesful, false otherwise.
 
         Raises:
-            ValueError: if any field is invalid.
+            ValueError: if any field has an invalid value.
             TypeError: if any field has the wrong type.
         """
         # Scenario and map must not be empty
         if not scenario_input.get().strip():
+            _gui_api.focus_on(scenario_input)
             raise ValueError("Scenario name cannot be empty.")
         if not map_input.get().strip():
+            _gui_api.focus_on(map_input)
             raise ValueError("Map cannot be empty.")
         # Duration must be a positive float
         try:
             duration = duration_input.get()
         except TypeError as te:
+            _gui_api.focus_on(duration_input)
             raise TypeError(f"Duration: {te}")
         except ValueError as ve:
+            _gui_api.focus_on(duration_input)
             raise ValueError(f"Duration: {ve}")
         if duration <= 0:
+            _gui_api.focus_on(duration_input)
             raise ValueError("Duration must be a positive number.")
         # Frequency must be positive float
         try:
             freq = freq_input.get()
         except TypeError as te:
+            _gui_api.focus_on(freq_input)
             raise TypeError(f"Capture frequency: {te}")
         except ValueError as ve:
+            _gui_api.focus_on(freq_input)
             raise ValueError(f"Capture frequency: {ve}")
         if freq <= 0:
+            _gui_api.focus_on(freq_input)
             raise ValueError("Capture frequency must be a positive number.")
         # Weather and time can be empty, but if time is not empty, it must be valid
         t = time_input.get().strip()
         if t and not utils.is_hhmmss_time_string(t):
+            _gui_api.focus_on(time_input)
             raise ValueError("Start Time must be in HH:mm:ss format.")
+        # AI traffic vehicles value must be a non-negative integer
+        try:
+            n_ai = num_ai_input.get()
+        except TypeError as te:
+            _gui_api.focus_on(num_ai_input)
+            raise TypeError(f"AI Traffic Vehicles: {te}")
+        except ValueError as ve:
+            _gui_api.focus_on(num_ai_input)
+            raise ValueError(f"AI Traffic Vehicles: {ve}")
+        if n_ai < 0:
+            _gui_api.focus_on(num_ai_input)
+            raise ValueError("AI Traffic Vehicles must be zero or positive.")
         # Vehicle name & model must not be empty
         if not vehicle_name_input.get().strip():
+            _gui_api.focus_on(vehicle_name_input)
             raise ValueError("Vehicle name cannot be empty.")
         if not vehicle_model_input.get().strip():
+            _gui_api.focus_on(vehicle_model_input)
             raise ValueError("Vehicle model cannot be empty.")
         # Initial vehicle position & rotation must be valid Float 3 tuples
         try:
             utils.str_to_tuple(vehicle_pos_input.get(), float, 3)
         except ValueError:
+            _gui_api.focus_on(vehicle_pos_input)
             raise TypeError("Vehicle initial position must be three comma-separated numbers.")
         try:
             utils.str_to_tuple(vehicle_rot_input.get(), float, 3)
         except ValueError:
+            _gui_api.focus_on(vehicle_rot_input)
             raise TypeError("Vehicle initial rotation must be three comma-separated numbers.")
-        # AI traffic vehicles value must be a non-negative integer
-        try:
-            n_ai = num_ai_input.get()
-        except TypeError as te:
-            raise TypeError(f"AI Traffic Vehicles: {te}")
-        except ValueError as ve:
-            raise ValueError(f"AI Traffic Vehicles: {ve}")
-        if n_ai < 0:
-            raise ValueError("AI Traffic Vehicles must be zero or positive.")
         # No need to check starting waypoint since it can be empty
-        return True
+
+    def validate_camera_fields(
+        name_widget,
+        pos_widget,
+        dir_widget,
+        upv_widget,
+        res_widget,
+        fov_widget,
+        nearfar_widget,
+        col_widget,
+        ann_widget,
+        dep_widget
+    ):
+        """
+        Validates and parses all camera fields from widgets.
+        Returns a tuple of parsed values.
+        Raises ValueError with a field-specific message if any field is invalid.
+        """
+        try:
+            cam_name = name_widget.get()
+        except ValueError as err:
+            _gui_api.focus_on(name_widget)
+            raise ValueError(f"Camera name error: {err}")
+        try:
+            cam_pos = utils.str_to_tuple(pos_widget.get(), float, 3)
+        except ValueError as err:
+            _gui_api.focus_on(pos_widget)
+            raise ValueError(f"Camera position error: {err}")
+        try:
+            cam_dir = utils.str_to_tuple(dir_widget.get(), float, 3)
+        except ValueError as err:
+            _gui_api.focus_on(dir_widget)
+            raise ValueError(f"Camera direction error: {err}")
+        try:
+            cam_upv = utils.str_to_tuple(upv_widget.get(), float, 3)
+        except ValueError as err:
+            _gui_api.focus_on(upv_widget)
+            raise ValueError(f"Camera up vector error: {err}")
+        try:
+            cam_res = utils.str_to_tuple(res_widget.get(), int, 2)
+        except ValueError as err:
+            _gui_api.focus_on(res_widget)
+            raise ValueError(f"Camera resolution error: {err}")
+        try:
+            cam_fov = int(fov_widget.get())
+        except ValueError as err:
+            _gui_api.focus_on(fov_widget)
+            raise ValueError(f"Camera FOV Y error: {err}")
+        try:
+            cam_nf = utils.str_to_tuple(nearfar_widget.get(), float, 2)
+        except ValueError as err:
+            _gui_api.focus_on(nearfar_widget)
+            raise ValueError(f"Camera near/far planes error: {err}")
+        try:
+            cam_col = col_widget.get()
+        except ValueError as err:
+            _gui_api.focus_on(col_widget)
+            raise ValueError(f"Camera render colours error: {err}")
+        try:
+            cam_ann = ann_widget.get()
+        except ValueError as err:
+            _gui_api.focus_on(ann_widget)
+            raise ValueError(f"Camera render annotations error: {err}")
+        try:
+            cam_dep = dep_widget.get()
+        except ValueError as err:
+            _gui_api.focus_on(dep_widget)
+            raise ValueError(f"Camera render depth error: {err}")
+        return (
+            cam_name, cam_pos, cam_dir, cam_upv, cam_res, cam_fov, cam_nf, cam_col, cam_ann, cam_dep
+        )
 
     def on_start():
         nonlocal session
@@ -299,7 +385,7 @@ def get_session_config():
                 validate_session_fields()
             except (ValueError, TypeError) as err:
                 show_warning_message(str(err))
-                logging_mgr.log_action(f"Validation failed: {err}")
+                logging_mgr.log_warning(f"Validation failed: {err}")
                 return
             try:
                 vehicle_pos = utils.str_to_tuple(vehicle_pos_input.get(), float, 3)
@@ -312,28 +398,31 @@ def get_session_config():
                 )
                 vehicle.validate()
                 cameras = []
-                for (name_widget, pos_widget, dir_widget, upv_widget, res_widget, fov_widget, nearfar_widget, col_widget, ann_widget, dep_widget) in camera_widgets:
+                for idx, (name_widget, pos_widget, dir_widget, upv_widget, res_widget, fov_widget, nearfar_widget, col_widget, ann_widget, dep_widget) in enumerate(camera_widgets):
                     try:
-                        cam_pos = utils.str_to_tuple(pos_widget.get(), float, 3)
-                        cam_dir = utils.str_to_tuple(dir_widget.get(), float, 3)
-                        cam_upv = utils.str_to_tuple(upv_widget.get(), float, 3)
-                        cam_res = utils.str_to_tuple(res_widget.get(), int, 2)
-                        cam_nf = utils.str_to_tuple(nearfar_widget.get(), float, 2)
+                        (
+                            cam_name, cam_pos, cam_dir, cam_upv, cam_res, cam_fov, cam_nf,
+                            cam_col, cam_ann, cam_dep
+                        ) = validate_camera_fields(
+                            name_widget, pos_widget, dir_widget, upv_widget, res_widget,
+                            fov_widget, nearfar_widget, col_widget, ann_widget, dep_widget
+                        )
                         cam = CameraSensorConfig(
-                            name=name_widget.get(),
+                            name=cam_name,
                             position=cam_pos,
                             direction=cam_dir,
                             up_vector=cam_upv,
                             resolution=cam_res,
-                            fov_y=int(fov_widget.get()),
+                            fov_y=cam_fov,
                             near_far_planes=cam_nf,
-                            is_render_colours=col_widget.get(),
-                            is_render_annotations=ann_widget.get(),
-                            is_render_depth=dep_widget.get()
+                            is_render_colours=cam_col,
+                            is_render_annotations=cam_ann,
+                            is_render_depth=cam_dep
                         )
                         cam.validate()
                     except ValueError as ve:
-                        show_warning_message(f"Invalid camera config: {ve}")
+                        cam_name = name_widget.get() or f"#{idx+1}"
+                        show_warning_message(f"Invalid camera config for camera '{cam_name}': {ve}")
                         return
                     cameras.append(cam)
                 session = session_config.SessionConfig(
@@ -451,26 +540,28 @@ def get_session_config():
                         name_w, pos_w, dir_w, upv_w, res_w, fov_w, nearfar_w, col_w, ann_w, dep_w = widgets
                         def on_save_edit():
                             try:
-                                cam_pos = utils.str_to_tuple(pos_w.get(), float, 3)
-                                cam_dir = utils.str_to_tuple(dir_w.get(), float, 3)
-                                cam_upv = utils.str_to_tuple(upv_w.get(), float, 3)
-                                cam_res = utils.str_to_tuple(res_w.get(), int, 2)
-                                cam_nf = utils.str_to_tuple(nearfar_w.get(), float, 2)
+                                (
+                                    cam_name, cam_pos, cam_dir, cam_upv, cam_res, cam_fov, cam_nf,
+                                    cam_col, cam_ann, cam_dep
+                                ) = validate_camera_fields(
+                                    name_w, pos_w, dir_w, upv_w, res_w,
+                                    fov_w, nearfar_w, col_w, ann_w, dep_w
+                                )
                                 cam = CameraSensorConfig(
-                                    name=name_w.get(),
+                                    name=cam_name,
                                     position=cam_pos,
                                     direction=cam_dir,
                                     up_vector=cam_upv,
                                     resolution=cam_res,
-                                    fov_y=int(fov_w.get()),
+                                    fov_y=cam_fov,
                                     near_far_planes=cam_nf,
-                                    is_render_colours=col_w.get(),
-                                    is_render_annotations=ann_w.get(),
-                                    is_render_depth=dep_w.get()
+                                    is_render_colours=cam_col,
+                                    is_render_annotations=cam_ann,
+                                    is_render_depth=cam_dep
                                 )
                                 cam.validate()
-                            except Exception as ve:
-                                show_warning_message(f"Invalid camera config: {ve}")
+                            except (ValueError, TypeError) as err:
+                                show_warning_message(f"Invalid camera config: {err}")
                                 return
                             camera_widgets[idx] = (name_w, pos_w, dir_w, upv_w, res_w, fov_w, nearfar_w, col_w, ann_w, dep_w)
                             logging_mgr.log_action(f"Edited camera config '{name_w.get()}' in GUI.")
@@ -534,22 +625,24 @@ def get_session_config():
 
         def on_save_camera():
             try:
-                cam_pos = utils.str_to_tuple(pos_widget.get(), float, 3)
-                cam_dir = utils.str_to_tuple(dir_widget.get(), float, 3)
-                cam_upv = utils.str_to_tuple(upv_widget.get(), float, 3)
-                cam_res = utils.str_to_tuple(res_widget.get(), int, 2)
-                cam_nf = utils.str_to_tuple(nearfar_widget.get(), float, 2)
+                (
+                    cam_name, cam_pos, cam_dir, cam_upv, cam_res, cam_fov, cam_nf,
+                    cam_col, cam_ann, cam_dep
+                ) = validate_camera_fields(
+                    name_widget, pos_widget, dir_widget, upv_widget, res_widget,
+                    fov_widget, nearfar_widget, col_widget, ann_widget, dep_widget
+                )
                 cam = CameraSensorConfig(
-                    name=name_widget.get(),
+                    name=cam_name,
                     position=cam_pos,
                     direction=cam_dir,
                     up_vector=cam_upv,
                     resolution=cam_res,
-                    fov_y=int(fov_widget.get()),
+                    fov_y=cam_fov,
                     near_far_planes=cam_nf,
-                    is_render_colours=col_widget.get(),
-                    is_render_annotations=ann_widget.get(),
-                    is_render_depth=dep_widget.get()
+                    is_render_colours=cam_col,
+                    is_render_annotations=cam_ann,
+                    is_render_depth=cam_dep
                 )
                 cam.validate()
             except ValueError as ve:
@@ -557,7 +650,7 @@ def get_session_config():
                 return  # Do not close the subwindow to allow user to correct input
 
             camera_widgets.append(widgets)
-            logging_mgr.log_action(f"Added camera config '{name_widget.get()}' to GUI.")
+            logging_mgr.log_action(f"Added camera config '{name_widget.get()}' to session config.")
             _gui_api.close_subwindow(cam_win)
             refresh_camera_list()
 
@@ -577,7 +670,6 @@ def get_session_config():
             show_warning_message(f"Maximum number of cameras ({max_camera_rows}) reached.")
             return
         add_camera_row()
-        logging_mgr.log_action("User added a new camera config row.")
 
     refresh_camera_list()
     # Focus on the first input field (scenario_input) in the main window
@@ -592,13 +684,6 @@ def show_error_message(message: str) -> None:
     _gui_api.show_error_message(message)
 
 def show_warning_message(message: str) -> None:
-    if _gui_api is None:
-        raise RuntimeError("GUI API not set. Call set_gui_api() with an implementation before use.")
-    _gui_api.show_warning_message(message)
-def show_warning_message(message: str) -> None:
-    if _gui_api is None:
-        raise RuntimeError("GUI API not set. Call set_gui_api() with an implementation before use.")
-    _gui_api.show_warning_message(message)
     if _gui_api is None:
         raise RuntimeError("GUI API not set. Call set_gui_api() with an implementation before use.")
     _gui_api.show_warning_message(message)
