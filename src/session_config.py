@@ -6,7 +6,7 @@ from camera_sensor_config import CameraSensorConfig
 
 class SessionConfigDict(TypedDict):
     scenario: str
-    duration_s: int
+    duration_s: float
     capture_freq_hz: float
     map: str
     vehicle: VehicleConfig
@@ -20,7 +20,7 @@ class SessionConfig:
     """Configuration class for a capture session."""
     def __init__(self,
                  scenario: str = None,
-                 duration_s: int = None,
+                 duration_s: float = None,
                  capture_freq_hz: float = None,
                  map_name: str = None,
                  vehicle: VehicleConfig = None,
@@ -53,12 +53,12 @@ class SessionConfig:
         self._scenario = scenario
 
     @property
-    def duration_s(self) -> int:
+    def duration_s(self) -> float:
         """Get the duration of the capture session (in seconds)."""
         return self._duration_s
 
     @duration_s.setter
-    def duration_s(self, duration: int) -> None:
+    def duration_s(self, duration: float) -> None:
         """Set the duration of the capture session (in seconds)."""
         if duration <= 0:
             raise ValueError('Duration must be a positive number.')

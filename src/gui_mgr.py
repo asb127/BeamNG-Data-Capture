@@ -106,10 +106,10 @@ def get_session_config():
                        font=_label_font,
                        row=5,
                        column=0)
-    duration_input = _gui_api.add_int_input(grid,
-                                            default=settings.default_duration_s,
-                                            row=5,
-                                            column=1)
+    duration_input = _gui_api.add_float_input(grid,  # changed from add_int_input to add_float_input
+                                              default=settings.default_duration_s,
+                                              row=5,
+                                              column=1)
     _gui_api.add_label(grid,
                        "Capture Frequency (Hz):",
                        font=_label_font,
@@ -236,7 +236,7 @@ def get_session_config():
             raise ValueError("Scenario name cannot be empty.")
         if not map_input.get().strip():
             raise ValueError("Map cannot be empty.")
-        # Duration must be a positive integer
+        # Duration must be a positive float
         try:
             duration = duration_input.get()
         except TypeError as te:
@@ -244,7 +244,7 @@ def get_session_config():
         except ValueError as ve:
             raise ValueError(f"Duration: {ve}")
         if duration <= 0:
-            raise ValueError("Duration must be a positive integer.")
+            raise ValueError("Duration must be a positive number.")
         # Frequency must be positive float
         try:
             freq = freq_input.get()
