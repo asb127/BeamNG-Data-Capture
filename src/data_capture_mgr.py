@@ -45,32 +45,22 @@ def save_camera_image_data(camera: Camera, output_dir: str) -> None:
     sensor_data = camera.poll()
     logging_mgr.log_action(f'Camera "{camera.name}" data polled.')
 
-    # Split the sensor data and remove alpha channel from color image
-    color_image = sensor_data['colour'].convert('RGB')
-    depth_image = sensor_data['depth']
-    semantic_image = sensor_data['annotation']
-
-    # Define a helper function to save images
-    def save_image(image, path):
-        image.save(path)
-
-    # Prepare file paths
-    color_path = utils.join_paths(output_dir, 'color.png')
-    depth_path = utils.join_paths(output_dir, 'depth.png')
-    semantic_path = utils.join_paths(output_dir, 'semantic.png')
-
-    # Save the images to the output directory in parallel
-    with ThreadPoolExecutor() as executor:
-        futures = [
-            executor.submit(save_image, color_image, color_path),
-            executor.submit(save_image, depth_image, depth_path),
-            executor.submit(save_image, semantic_image, semantic_path)
-        ]
-        for future in as_completed(futures):
-            try:
-                future.result()
-            except Exception as e:
-                logging_mgr.log_error(f'Error saving image for camera {camera.name}: {e}')
+    # Save images based on render flags
+    try:
+        if getattr(camera, "is_render_colours", False):
+            color_image = sensor_data['colour'].convert('RGB')
+            color_path = utils.join_paths(output_dir, 'color.png')
+            color_image.save(color_path)
+        if getattr(camera, "is_render_depth", False):
+            depth_image = sensor_data['depth']
+            depth_path = utils.join_paths(output_dir, 'depth.png')
+            depth_image.save(depth_path)
+        if getattr(camera, "is_render_annotations", False):
+            semantic_image = sensor_data['annotation']
+            semantic_path = utils.join_paths(output_dir, 'semantic.png')
+            semantic_image.save(semantic_path)
+    except Exception as e:
+        logging_mgr.log_error(f'Error saving image for camera {camera.name}: {e}')
 
     logging_mgr.log_action(f'Camera "{camera.name}" data saved in "{output_dir}".')
 

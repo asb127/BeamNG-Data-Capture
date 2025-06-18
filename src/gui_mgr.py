@@ -374,6 +374,7 @@ def get_session_config():
         nonlocal session
         mode = session_source_rg.get()
         if mode == "load":
+            # Load session config from file
             file_path = config_path_input.get()
             if not file_path or not os.path.isfile(file_path):
                 show_error_message("Please select a valid session config file.")
@@ -381,11 +382,21 @@ def get_session_config():
             session = session_config.create_session_config_from_file(file_path)
             logging_mgr.log_action(f"Loaded session config from file: {file_path}")
         else:
+            # Create new session config from GUI input
             try:
                 validate_session_fields()
             except (ValueError, TypeError) as err:
                 show_warning_message(str(err))
                 logging_mgr.log_warning(f"Validation failed: {err}")
+                return
+            # Validate camera names to ensure uniqueness
+            camera_names = [name_widget.get().strip().lower() for (name_widget, *_) in camera_widgets]
+            if len(set(camera_names)) != len(camera_names):
+                # Find the duplicates to output in the error message
+                from collections import Counter
+                counter = Counter(camera_names)
+                duplicates = [names for (names, amount) in counter.items() if amount > 1]
+                show_warning_message(f"Duplicate camera name(s): {duplicates}. Each camera must have a unique name (case-insensitive, ignoring whitespace).")
                 return
             try:
                 vehicle_pos = utils.str_to_tuple(vehicle_pos_input.get(), float, 3)

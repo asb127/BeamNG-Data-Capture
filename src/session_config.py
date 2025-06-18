@@ -232,14 +232,18 @@ class SessionConfig:
             if not self.cameras or not isinstance(self.cameras, list):
                 raise ValueError("Camera config error: at least one camera must be configured.")
             # Camera name uniqueness (ignoring case and whitespace)
-            camera_names = [camera.name.strip().lower() for camera in self.cameras]
-            name_set = set()
-            for name in camera_names:
+            camera_names = []
+            for camera in self.cameras:
+                name = camera.name.strip().lower()
                 if not name:
                     raise ValueError("Camera name error: cannot be empty or whitespace.")
-                if name in name_set:
-                    raise ValueError(f"Camera name error: duplicate camera name '{name}'. Each camera must have a unique name (case-insensitive, ignoring whitespace).")
-                name_set.add(name)
+                camera_names.append(name)
+            if len(set(camera_names)) != len(camera_names):
+                # Find the duplicates to output in the error message
+                from collections import Counter
+                counter = Counter(camera_names)
+                duplicates = [names for (names, amount) in counter.items() if amount > 1]
+                raise ValueError(f"Camera name error: duplicate camera name(s) {duplicates}. Each camera must have a unique name (case-insensitive, ignoring whitespace).")
             # Validate each camera
             for camera in self.cameras:
                 camera.validate()
