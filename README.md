@@ -8,6 +8,7 @@ The settings of the capture session are defined by a scenario, which can be conf
 _Note_: A BeamNG.tech licence is required for this capture program to work. Regular BeamNG.drive instances are not compatible.
 
 ## How to use
+
 ### Before launching
 Make sure to have both Python and BeamNGpy installed (all project dependencies listed on `requirements.txt` file). This project has been tested to work with Python 3.10, earlier versions are not guaranteed to work.
 
@@ -22,9 +23,14 @@ To execute the program and begin a capture session, open a console in the `src` 
 python main.py
 ```
 
-This will launch a BeamNG.tech instance and start a capture session with the default parameters defined in the `settings.py` file.
+This will launch a BeamNG.tech instance and start a capture session. By default, the session will use the parameters defined in the `settings.py` file, but the session can be configured using the graphical user interface (GUI) that appears at startup.
+
+## GUI
+
+A graphical user interface (GUI) is provided for configuring capture sessions. The GUI allows the user to either load a session configuration from file or create a new session configuration via form.
 
 ## Source files description
+
 ### Configuration files
 Used to define the classes and their corresponding dictionaries for the different configurations used by the program. The data in these configurations can be customized by the user.
 
@@ -38,7 +44,7 @@ Used to define the classes and their corresponding dictionaries for the differen
 : Defines the configuration used for the vehicles.
 
 ### Manager files
-Used to define functionatilies involving calls to the BeamNG.tech Python API.
+Used to define functionalities involving calls to the BeamNG.tech Python API.
 
 **data_capture_mgr.py**
 : Used to handle the data capturing from the simulation and metadata handling.
@@ -55,6 +61,17 @@ Used to define functionatilies involving calls to the BeamNG.tech Python API.
 **vehicle_mgr.py**
 : Used to manage calls regarding vehicles.
 
+### GUI and API Abstraction
+
+**gui_mgr.py**
+: High-level logic for the session configuration GUI, independent of the underlying GUI toolkit.
+
+**gui_api.py**
+: Defines the abstract interface for GUI operations, allowing different GUI frameworks to be used interchangeably.
+
+**gui_tkinter.py**
+: Implements the GUI API using Tkinter. This is the default GUI backend.
+
 ### General
 
 **main.py**
@@ -65,3 +82,7 @@ Used to define functionatilies involving calls to the BeamNG.tech Python API.
 
 **utils.py**
 : Defines generic or utility functions.
+
+**type_defs.py**
+: Contains type definitions and aliases used throughout the project.
+
