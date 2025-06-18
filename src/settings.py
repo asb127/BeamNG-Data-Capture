@@ -1,8 +1,6 @@
 import os
 import utils
-from typing import Dict, List
-
-from beamngpy.types import Float3, Quat
+from type_defs import Dict, Float3, Quat, List
 
 # General variables
 # - Here are defined the general variables used by the application
@@ -10,7 +8,7 @@ beamng_host: str = 'localhost'
 beamng_port: int = 25252
 random_seed: int = utils.get_time() # Can be set to a specific value for reproducibility
 simulation_steps_per_second: int = 60
-force_capture_freq_hz: bool = False
+force_capture_freq_hz: bool = True
 min_non_force_capture_freq_hz: float = 2
 wait_for_frame_sleep_time_s: float = 0.01
 
@@ -38,6 +36,7 @@ play_time: bool = True
 day_scale: float = 1.0
 night_scale: float = 1.0
 day_length_s: float = 600
+time_of_day_start: str = '12:00:00'
 
 # Vehicles
 # - Here are defined the vehicle settings used by the application
@@ -84,5 +83,13 @@ default_camera_render_flags: Dict[str, bool] = {
     'depth': True
     }
 default_camera_position: Float3 = (0, -0.5, 1.5)
+default_camera_direction: Float3 = (0, -1, 0)
+default_camera_up_vector: Float3 = (0, 0, 1)
 default_camera_fov_y: int = 70
 default_camera_near_far_planes: tuple = (0.1, 1000.0)
+
+# IMU
+# - Here are defined the IMU settings used by the application
+default_imu_position: Float3 = (0, 0, 0.5)
+default_accel_window_width: float = 50.0
+default_gyro_window_width: float = 50.0

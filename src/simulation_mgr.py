@@ -1,6 +1,6 @@
 from beamngpy import BeamNGpy
 from beamngpy.scenario import Scenario
-from beamngpy.types import StrDict, Time
+from type_defs import StrDict, Time
 
 import logging_mgr, settings
 
@@ -28,21 +28,24 @@ def resume_simulation(bng: BeamNGpy) -> None:
     bng.resume()
 
 def step_simulation_steps(bng: BeamNGpy, steps: int) -> None:
-    # Advance the simulation by the given number of steps
-    bng.step(steps)
+    # Advance the simulation by the given number of steps (if larger than 0)
+    if (steps > 0):
+        bng.step(steps)
+    else:
+        logging_mgr.log_warning(f'Requested steps ignored, value must be higher than zero. Value requested: {steps}.')
 
 def step_simulation_seconds(bng: BeamNGpy, seconds: int) -> None:
     # Advance the simulation the corresponding number of steps for the given number of seconds
     steps = int(seconds * simulation_steps_per_second)
-    bng.step(steps)
+    step_simulation_steps(bng, steps)
     logging_mgr.log_action(f'Simulation advanced by {seconds} seconds.')
 
-def set_simulation_steps_per_second(bng: BeamNGpy, steps_per_second: int) -> None:
-    # Store the value of the simulation steps per second in the global variable
+def set_deterministic_steps_per_second(bng: BeamNGpy, steps_per_second: int) -> None:
+    # Store the value of the deterministic steps per second in the global variable
     global simulation_steps_per_second
     simulation_steps_per_second = steps_per_second
-    # Set simulation steps per second to the given value
-    bng.set_steps_per_second(simulation_steps_per_second)
+    # Set deterministic mode and simulation steps per second to the given value
+    bng.set_deterministic(simulation_steps_per_second)
 
 def load_scenario(bng: BeamNGpy, scenario: Scenario) -> None:
     # Load the given scenario in the simulator

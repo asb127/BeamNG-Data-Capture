@@ -1,10 +1,11 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from beamngpy.sensors import Camera, AdvancedIMU
 from beamngpy import BeamNGpy
 from beamngpy.vehicle import Vehicle
 
 import logging_mgr, simulation_mgr, utils
 from camera_sensor_config import CameraSensorConfig
-from beamngpy.types import StrDict
+from type_defs import StrDict
 
 def create_camera_sensor(bng: BeamNGpy,
                          vehicle: Vehicle,
@@ -14,8 +15,11 @@ def create_camera_sensor(bng: BeamNGpy,
                            bng=bng,
                            vehicle=vehicle,
                            pos=camera.position,
+                           dir=camera.direction,
+                           up=camera.up_vector,
                            resolution=camera.resolution,
                            field_of_view_y=camera.fov_y,
+                           near_far_planes=camera.near_far_planes,
                            is_render_colours=camera.is_render_colours,
                            is_render_annotations=camera.is_render_annotations,
                            is_render_depth=camera.is_render_depth)
@@ -25,10 +29,14 @@ def create_camera_sensor(bng: BeamNGpy,
 def create_imu_sensor(bng: BeamNGpy,
                       vehicle: Vehicle,
                       name: str) -> AdvancedIMU:
+    import settings
     # Create an Inertial Measurement Unit (IMU) sensor attached to the vehicle
     sensor_imu = AdvancedIMU(name=name,
                              bng=bng,
                              vehicle=vehicle,
+                             pos=settings.default_imu_position,
+                             accel_window_width=settings.default_accel_window_width,
+                             gyro_window_width=settings.default_gyro_window_width,
                              is_send_immediately=True)
     return sensor_imu
 
@@ -37,19 +45,38 @@ def save_camera_image_data(camera: Camera, output_dir: str) -> None:
     sensor_data = camera.poll()
     logging_mgr.log_action(f'Camera "{camera.name}" data polled.')
 
-    # Split the sensor data
-    color_image = sensor_data['colour']
-    depth_image = sensor_data['depth']
-    semantic_image = sensor_data['annotation']
+    # Save images based on render flags
+    try:
+        if getattr(camera, "is_render_colours", False):
+            color_image = sensor_data['colour'].convert('RGB')
+            color_path = utils.join_paths(output_dir, 'color.png')
+            color_image.save(color_path)
+        if getattr(camera, "is_render_depth", False):
+            depth_image = sensor_data['depth']
+            depth_path = utils.join_paths(output_dir, 'depth.png')
+            depth_image.save(depth_path)
+        if getattr(camera, "is_render_annotations", False):
+            semantic_image = sensor_data['annotation']
+            semantic_path = utils.join_paths(output_dir, 'semantic.png')
+            semantic_image.save(semantic_path)
+    except Exception as e:
+        logging_mgr.log_error(f'Error saving image for camera {camera.name}: {e}')
 
-    # Remove alpha channel from color image
-    color_image = color_image.convert('RGB')
-
-    # Save the images to the output directory
-    color_image.save(utils.join_paths(output_dir, 'color.png'))
-    depth_image.save(utils.join_paths(output_dir, 'depth.png'))
-    semantic_image.save(utils.join_paths(output_dir, 'semantic.png'))
     logging_mgr.log_action(f'Camera "{camera.name}" data saved in "{output_dir}".')
+
+def save_all_camera_image_data(camera_list, frame_dir):
+    """Extract and save all camera image data in parallel from a list of camera sensors."""
+    with ThreadPoolExecutor() as executor:
+        futures = []
+        for camera_sensor in camera_list:
+            camera_dir = utils.create_dir(frame_dir, camera_sensor.name)
+            futures.append(executor.submit(save_camera_image_data, camera_sensor, camera_dir))
+        # Check that the data for all cameras is saved successfully
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                logging_mgr.log_error(f'Error saving camera data: {e}')
 
 def extract_imu_data(imu: AdvancedIMU) -> StrDict:
     # Extract data from the IMU sensor into a dictionary
@@ -87,23 +114,11 @@ def extract_vehicle_metadata(vehicle: Vehicle) -> StrDict:
 
     return metadata
 
-def extract_vehicle_simulation_time(vehicle: Vehicle) -> float:
-    # Poll the vehicle sensors
-    vehicle.sensors.poll()
-    logging_mgr.log_action(f'Vehicle "{vehicle.vid}" sensors polled.')
-
-    # Extract state data from the vehicle
-    state_data = vehicle.sensors['state']
-    logging_mgr.log_action(f'Vehicle "{vehicle.vid}" state data extracted.')
-
-    # Extract simulation time from the vehicle
-    simulation_time = state_data['time']
-    logging_mgr.log_action(f'Vehicle "{vehicle.vid}" simulation time extracted: {simulation_time} seconds.')
-
-    return simulation_time
+def extract_vehicle_simulation_time_from_metadata(vehicle_metadata) -> float:
+    return vehicle_metadata['time']
 
 def extract_time_of_day_metadata(bng: BeamNGpy) -> StrDict:
-    '''Extract time of day metadata from the simulator.'''
+    """Extract time of day metadata from the simulator."""
     time_of_day = simulation_mgr.get_time_of_day(bng)
     # Extract time of day metadata into a dictionary
     metadata = {

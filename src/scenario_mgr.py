@@ -1,8 +1,8 @@
-from typing import List, Tuple
+from type_defs import List, Tuple
 from beamngpy import BeamNGpy, Scenario, Vehicle
 from beamngpy.scenario.scenario_object import ScenarioObject
 
-import logging_mgr, settings, simulation_mgr, vehicle_mgr, utils
+import logging_mgr, simulation_mgr, vehicle_mgr, utils
 from session_config import SessionConfig
 
 # Global variable to store the available weather presets
@@ -15,12 +15,12 @@ def teleport_vehicle_to_waypoint(bng: BeamNGpy,
                                  scenario: Scenario,
                                  vehicle: Vehicle,
                                  waypoint: str) -> None:
-    '''
+    """
     Teleport the vehicle to the provided waypoint in the scenario.
 
     The waypoint must be a valid waypoint in the scenario.
     Scenario must be loaded, otherwise an error will be triggered.
-    '''
+    """
     # Scenario must be loaded in the simulator to find waypoints (get_current() doesn't match the scenario)
     if bng.scenario.get_current(False).name != scenario.name:
         logging_mgr.log_error(f'Scenario {scenario} must be loaded in the simulator to use waypoints.')
@@ -43,7 +43,7 @@ def teleport_vehicle_to_waypoint(bng: BeamNGpy,
 def teleport_vehicle_to_random_waypoint(bng: BeamNGpy,
                                         scenario: Scenario,
                                         vehicle: Vehicle) -> None:
-    '''Teleport the vehicle to a random waypoint in the scenario.'''
+    """Teleport the vehicle to a random waypoint in the scenario."""
     # Retrieve the list of waypoints in the scenario
     waypoints_list = find_waypoints(scenario)
     # If no waypoints are found, log a warning and skip teleporting the vehicle
@@ -60,7 +60,7 @@ def teleport_vehicle_to_random_waypoint(bng: BeamNGpy,
 
 
 def find_waypoints(scenario: Scenario) -> List[str]:
-    '''Find all waypoints in the scenario and return them in a list of its names.'''
+    """Find all waypoints in the scenario and return them in a list of its names."""
     # Use global list to store the waypoints
     global scenario_waypoints
     scenario_waypoints = scenario.find_waypoints()
@@ -69,7 +69,7 @@ def find_waypoints(scenario: Scenario) -> List[str]:
     return [waypoint.name for waypoint in scenario_waypoints]
 
 def create_scenario(bng: BeamNGpy, session: SessionConfig) -> Tuple[Scenario, Vehicle]:
-    '''Create a scenario based on the provided session configuration.'''
+    """Create a scenario based on the provided session configuration."""
     # Create a scenario in the given map
     scenario = Scenario(session.map, session.scenario)
     logging_mgr.log_action(f'Scenario "{session.scenario}" created in map "{session.map}".')
@@ -89,10 +89,10 @@ def initialize_scenario(bng: BeamNGpy,
                         scenario: Scenario,
                         ego_vehicle: Vehicle,
                         session_config: SessionConfig) -> None:
-    '''
+    """
     Initialize the scenario in the simulator with the given ego vehicle.
     Also sets the specified weather and number of AI traffic vehicles.
-    '''
+    """
     # Load and start the scenario in the simulator
     simulation_mgr.load_scenario(bng, scenario)
     simulation_mgr.start_scenario(bng)
@@ -108,8 +108,9 @@ def initialize_scenario(bng: BeamNGpy,
     set_weather_preset(bng, session_config.weather)
 
 def get_weather_presets() -> None:
-    '''Load the available weather presets from the settings file into the global variable "weather_presets".'''
+    """Load the available weather presets from the settings file into the global variable "weather_presets"."""
     global weather_presets
+    import settings
     # Load the weather presets from the path specified in the settings
     weather_presets = utils.load_json_file(settings.weather_presets_path).keys()
     # Log a warning if no weather presets are found
@@ -119,11 +120,11 @@ def get_weather_presets() -> None:
         logging_mgr.log_warning('No weather presets file found. Weather presets will not be available.')
 
 def set_weather_preset(bng: BeamNGpy, weather_preset: str, transition_time: float = 1) -> None:
-    '''
+    """
     Set the weather preset for the simulator to the provided preset.
 
     A transition time can be specified to smooth the weather change.
-    '''
+    """
     # If no weather preset is provided, skip
     if not weather_preset:
         logging_mgr.log_action('No weather preset provided. Skipping weather preset configuration.')
