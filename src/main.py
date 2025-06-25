@@ -132,6 +132,7 @@ try:
         simulation_mgr.resume_simulation(bng)
 
     # Main capture loop and logic
+    frame_metadata_list = []
     for cur_frame_num in range(num_frames):
         # Check time of day
         time_of_day = simulation_mgr.get_time_of_day(bng)
@@ -145,21 +146,18 @@ try:
             vehicle_mgr.set_headlights(ego, 0)
             headlights_on = False
 
-        # Create a directory for the frame output
-        frame_dir = utils.create_frame_output_dir(output_dir, cur_frame_num)
-
         # Extract and save the data from all camera sensors
-        data_capture_mgr.save_all_camera_image_data(camera_list, frame_dir)
+        data_capture_mgr.save_all_camera_image_data(camera_list, output_dir, cur_frame_num)
 
         # Extract, combine and save the metadata to the frame directory
         vehicle_metadata = data_capture_mgr.extract_vehicle_metadata(ego)
-        frame_metadata_list = []
-        frame_metadata_list.append(data_capture_mgr.extract_time_of_day_metadata(bng))
-        frame_metadata_list.append(vehicle_metadata)
-        frame_metadata_list.append(data_capture_mgr.extract_imu_data(sensor_imu))
-        frame_metadata_dict = utils.combine_dict(frame_metadata_list)
+        frame_metadata = {}
+        frame_metadata.update({'frame': cur_frame_num})
+        frame_metadata.update(data_capture_mgr.extract_time_of_day_metadata(bng))
+        frame_metadata.update(vehicle_metadata)
+        frame_metadata.update(data_capture_mgr.extract_imu_data(sensor_imu))
+        frame_metadata_list.append(frame_metadata)
 
-        data_capture_mgr.save_metadata(frame_metadata_dict, frame_dir)
         simulation_mgr.display_message(bng, f'Frame {cur_frame_num} captured.')
 
         # Use the 'ego' vehicle metadata to check the current simulation time
@@ -198,6 +196,9 @@ try:
                         # Update the current simulation time and last frame period
                         current_sim_time_s = data_capture_mgr.extract_vehicle_simulation_time_from_metadata(vehicle_metadata)
                         last_frame_period_s = current_sim_time_s - last_capture_time_s
+
+    # After capture loop, save all frame metadata in a single file
+    data_capture_mgr.save_metadata(frame_metadata_list, output_dir, 'frames_metadata.json')
 
 except KeyboardInterrupt:
     utils.log_and_show_error('Simulation stopped by user.')

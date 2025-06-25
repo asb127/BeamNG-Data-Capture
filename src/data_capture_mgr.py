@@ -40,37 +40,37 @@ def create_imu_sensor(bng: BeamNGpy,
                              is_send_immediately=True)
     return sensor_imu
 
-def save_camera_image_data(camera: Camera, output_dir: str) -> None:
+def save_camera_image_data(camera: Camera, output_dir: str, frame_num: int) -> None:
     # Poll the camera sensor
     sensor_data = camera.poll()
     logging_mgr.log_action(f'Camera "{camera.name}" data polled.')
 
     # Save images based on render flags
     try:
+        frame_str = f"{frame_num:05d}"
         if getattr(camera, "is_render_colours", False):
             color_image = sensor_data['colour'].convert('RGB')
-            color_path = utils.join_paths(output_dir, 'color.png')
+            color_path = utils.join_paths(output_dir, f'frame_{frame_str}_{camera.name}_color.png')
             color_image.save(color_path)
         if getattr(camera, "is_render_depth", False):
             depth_image = sensor_data['depth']
-            depth_path = utils.join_paths(output_dir, 'depth.png')
+            depth_path = utils.join_paths(output_dir, f'frame_{frame_str}_{camera.name}_depth.png')
             depth_image.save(depth_path)
         if getattr(camera, "is_render_annotations", False):
             semantic_image = sensor_data['annotation']
-            semantic_path = utils.join_paths(output_dir, 'semantic.png')
+            semantic_path = utils.join_paths(output_dir, f'frame_{frame_str}_{camera.name}_semantic.png')
             semantic_image.save(semantic_path)
     except Exception as e:
         logging_mgr.log_error(f'Error saving image for camera {camera.name}: {e}')
 
-    logging_mgr.log_action(f'Camera "{camera.name}" data saved in "{output_dir}".')
+    logging_mgr.log_action(f'Camera "{camera.name}" data saved for frame {frame_num} in "{output_dir}".')
 
-def save_all_camera_image_data(camera_list, frame_dir):
+def save_all_camera_image_data(camera_list, output_dir, frame_num):
     """Extract and save all camera image data in parallel from a list of camera sensors."""
     with ThreadPoolExecutor() as executor:
         futures = []
         for camera_sensor in camera_list:
-            camera_dir = utils.create_dir(frame_dir, camera_sensor.name)
-            futures.append(executor.submit(save_camera_image_data, camera_sensor, camera_dir))
+            futures.append(executor.submit(save_camera_image_data, camera_sensor, output_dir, frame_num))
         # Check that the data for all cameras is saved successfully
         for future in as_completed(futures):
             try:
