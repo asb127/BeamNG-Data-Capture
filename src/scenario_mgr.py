@@ -35,7 +35,7 @@ def teleport_vehicle_to_waypoint(bng: BeamNGpy,
             if target_waypoint:
                 vehicle_mgr.teleport_vehicle(vehicle,
                                              target_waypoint.pos,
-                                              target_waypoint.rot)
+                                             target_waypoint.rot)
                 logging_mgr.log_action(f'Vehicle {vehicle.vid} teleported to waypoint "{waypoint}".')
             else:
                 logging_mgr.log_warning(f'Waypoint "{waypoint}" not found in the scenario. Vehicle not teleported.')
